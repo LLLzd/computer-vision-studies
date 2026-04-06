@@ -1,0 +1,68 @@
+# 常见的忽略文件和目录
+
+# IDE和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 虚拟环境
+venv/
+env/
+.venv/
+*.pyenv/
+
+# 依赖包
+__pycache__/
+*.pyc
+
+# 数据文件（匹配所有层级）
+**/data
+**/data/
+**/dataset/
+
+# 模型文件（匹配所有层级）
+**/models/__pycache__/
+**/models/
+# 大型模型目录
+**/models/Qwen/
+
+# 权重文件（匹配所有层级）
+**/weights/
+
+# 输出文件（匹配所有层级）
+**/outputs/
+
+# 日志文件
+*.log
+logs/
+
+# 配置文件
+.env
+*.env
+
+# 临时文件
+tmp/
+temp/
+
+# 测试文件
+pytest_cache/
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# 构建文件
+build/
+dist/
+*.egg-info/
+
+# 大文件
+*.zip
+*.tar.gz
+*.tar.bz2
+*.rar
