@@ -11,11 +11,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 from dataset import VOCDataset
 from net import AnchorFreeDetector
-from config import BATCH_SIZE, NUM_WORKERS, MODEL_PATH, OUTPUT_DIR, VOC_CLASSES, NUM_CLASSES, THRESHOLD, IOU_THRESHOLD, IMAGE_SIZE, HEATMAP_SIZE
-
-# 快速测试开关：设置为True时只运行10个batch
-QUICK_TEST = True
-QUICK_TEST_BATCHES = 10
+from config import BATCH_SIZE, NUM_WORKERS, MODEL_PATH, OUTPUT_DIR, VOC_CLASSES, NUM_CLASSES, THRESHOLD, IOU_THRESHOLD, IMAGE_SIZE, HEATMAP_SIZE, QUICK_TEST, QUICK_TEST_BATCHES
 
 def decode_detections(heatmap, offset, wh, threshold=THRESHOLD):
     """从预测结果中解码检测结果

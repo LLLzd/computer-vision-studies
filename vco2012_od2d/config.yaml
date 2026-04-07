@@ -1,0 +1,71 @@
+# 数据配置
+DATA_DIR: "data"
+JPEGIMAGES_DIR: "data/VOC2012/JPEGImages"
+ANNOTATIONS_DIR: "data/VOC2012/Annotations"
+OUTPUT_DIR: "outputs"
+
+# VOC 2012 类别
+VOC_CLASSES:
+  - "aeroplane"
+  - "bicycle"
+  - "bird"
+  - "boat"
+  - "bottle"
+  - "bus"
+  - "car"
+  - "cat"
+  - "chair"
+  - "cow"
+  - "diningtable"
+  - "dog"
+  - "horse"
+  - "motorbike"
+  - "person"
+  - "pottedplant"
+  - "sheep"
+  - "sofa"
+  - "train"
+  - "tvmonitor"
+
+# 图像尺寸配置
+IMAGE_SIZE: [512, 512]  # 输入图像尺寸
+HEATMAP_SIZE: [128, 128]  # Heatmap尺寸 (1/4 缩放)
+
+# 模型配置
+INPUT_CHANNELS: 3  # 输入通道数
+HIDDEN_CHANNELS: 64  # 隐藏通道数
+
+# Box平均尺寸（在512x512尺度下，用于初始化wh预测头）
+AVG_BOX_WIDTH: 162.34  # 平均宽度
+AVG_BOX_HEIGHT: 203.76  # 平均高度
+
+# 训练配置
+BATCH_SIZE: 2  # 批量大小
+NUM_WORKERS: 2  # 数据加载 worker 数量
+EPOCHS: 50  # 训练轮数
+INITIAL_LR: 0.0001  # 初始学习率
+
+# 学习率调度配置
+WARMUP_EPOCHS: 5  # 预热epoch数量
+WARMUP_LR: 1e-06  # 预热起始学习率
+MIN_LR: 1e-06  # 最小学习率
+LR_SCHEDULER: "cosine"  # 学习率调度器类型: 'cosine', 'step', 'plateau'
+
+# 损失函数权重
+HEATMAP_LOSS_WEIGHT: 1.0  # heatmap损失权重
+OFFSET_LOSS_WEIGHT: 1.0  # offset损失权重
+WH_LOSS_WEIGHT: 0.1  # wh损失权重
+
+# 推理配置
+THRESHOLD: 0.5  # 检测阈值
+IOU_THRESHOLD: 0.3  # NMS IoU阈值
+MAX_DETECTIONS: 20  # 最大检测数量
+
+# 模型保存路径
+WEIGHTS_DIR: "outputs/weights"
+MODEL_PATH: "outputs/weights/anchor_free_detector.pth"
+
+# 快速测试配置
+QUICK_TEST: true  # 快速测试开关
+QUICK_TEST_BATCHES: 10  # 快速测试批次数
+QUICK_TEST_EPOCHS: 1  # 快速测试轮数

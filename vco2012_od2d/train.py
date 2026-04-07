@@ -14,13 +14,10 @@ import numpy as np
 from dataset import VOCDataset
 from net import AnchorFreeDetector, HeatmapLoss
 from config import (
-    BATCH_SIZE, NUM_EPOCHS, LEARNING_RATE, NUM_WORKERS, MODEL_PATH, OUTPUT_DIR,
-    WARMUP_EPOCHS, WARMUP_LR, MIN_LR, LR_SCHEDULER
+    BATCH_SIZE, EPOCHS as NUM_EPOCHS, INITIAL_LR as LEARNING_RATE, NUM_WORKERS, 
+    MODEL_PATH, OUTPUT_DIR, WARMUP_EPOCHS, WARMUP_LR, MIN_LR, LR_SCHEDULER,
+    QUICK_TEST, QUICK_TEST_BATCHES, QUICK_TEST_EPOCHS
 )
-
-# 快速测试开关：设置为True时只运行10个batch
-QUICK_TEST = False
-QUICK_TEST_BATCHES = 100
 
 # Early Stopping配置
 EARLY_STOP_PATIENCE = 5  # 连续5个epoch验证loss没改善就停止
