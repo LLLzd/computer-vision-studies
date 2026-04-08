@@ -8,7 +8,7 @@ import os
 import numpy as np
 from torch.utils.data import Dataset
 from preprocess import Preprocessor
-from config import JPEGIMAGES_DIR, ANNOTATIONS_DIR, IMAGE_SIZE, HEATMAP_SIZE, VOC_CLASSES, CLS_TO_IDX
+from config import JPEGIMAGES_DIR, ANNOTATIONS_DIR, IMAGE_SIZE, HEATMAP_SIZE, VOC_CLASSES, CLS_TO_IDX, NUM_CLASSES
 
 class VOCDataset(Dataset):
     """VOC2012数据集类"""
@@ -114,7 +114,7 @@ class VOCDataset(Dataset):
             wh: 宽高（在原图尺度上的宽高）
         """
         # 初始化heatmap、偏移量和宽高
-        heatmap = np.zeros((len(VOC_CLASSES), HEATMAP_SIZE[0], HEATMAP_SIZE[1]), dtype=np.float32)
+        heatmap = np.zeros((NUM_CLASSES, HEATMAP_SIZE[0], HEATMAP_SIZE[1]), dtype=np.float32)
         offsets = np.zeros((2, HEATMAP_SIZE[0], HEATMAP_SIZE[1]), dtype=np.float32)  # (x, y)偏移
         wh = np.zeros((2, HEATMAP_SIZE[0], HEATMAP_SIZE[1]), dtype=np.float32)  # (width, height)
         
@@ -124,6 +124,10 @@ class VOCDataset(Dataset):
         
         # 遍历每个边界框
         for cls, xmin, ymin, xmax, ymax in boxes:
+            # 检查类别是否在检测列表中
+            if cls not in CLS_TO_IDX:
+                continue  # 跳过不在检测列表中的类别
+            
             # 计算目标中心
             center_x = (xmin + xmax) / 2
             center_y = (ymin + ymax) / 2
@@ -141,7 +145,7 @@ class VOCDataset(Dataset):
             hm_y = max(0, min(HEATMAP_SIZE[0]-1, hm_y))
             
             # 获取类别索引
-            cls_idx = CLS_TO_IDX.get(cls, 0)
+            cls_idx = CLS_TO_IDX[cls]
             
             # 生成heatmap (使用高斯分布)
             self._draw_heatmap(heatmap[cls_idx], hm_x, hm_y, sigma=5)

@@ -27,6 +27,10 @@ VOC_CLASSES:
   - "train"
   - "tvmonitor"
 
+# 需要检测的类别（留空则检测所有类别）
+# 例如：["car", "dog", "person"]
+DETECT_CLASSES: ["car", "dog", "person"]
+
 # 图像尺寸配置
 IMAGE_SIZE: [512, 512]  # 输入图像尺寸
 HEATMAP_SIZE: [128, 128]  # Heatmap尺寸 (1/4 缩放)
@@ -59,13 +63,13 @@ WH_LOSS_WEIGHT: 0.1  # wh损失权重
 # 推理配置
 THRESHOLD: 0.5  # 检测阈值
 IOU_THRESHOLD: 0.3  # NMS IoU阈值
-MAX_DETECTIONS: 20  # 最大检测数量
+MAX_DETECTIONS: 10  # 最大检测数量
 
 # 模型保存路径
 WEIGHTS_DIR: "outputs/weights"
 MODEL_PATH: "outputs/weights/anchor_free_detector.pth"
 
 # 快速测试配置
-QUICK_TEST: true  # 快速测试开关
+QUICK_TEST: false  # 快速测试开关
 QUICK_TEST_BATCHES: 10  # 快速测试批次数
 QUICK_TEST_EPOCHS: 1  # 快速测试轮数

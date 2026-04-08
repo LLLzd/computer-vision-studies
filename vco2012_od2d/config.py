@@ -28,9 +28,20 @@ def load_config(config_path):
     os.makedirs(config.get('OUTPUT_DIR', 'outputs'), exist_ok=True)
     os.makedirs(config.get('WEIGHTS_DIR', 'outputs/weights'), exist_ok=True)
     
-    # 计算派生值
-    config['CLS_TO_IDX'] = {cls: i for i, cls in enumerate(config['VOC_CLASSES'])}
-    config['NUM_CLASSES'] = len(config['VOC_CLASSES'])
+    # 处理DETECT_CLASSES
+    detect_classes = config.get('DETECT_CLASSES', [])
+    if detect_classes:
+        # 只检测指定的类别
+        config['VOC_CLASSES'] = detect_classes
+        config['CLS_TO_IDX'] = {cls: i for i, cls in enumerate(detect_classes)}
+        config['NUM_CLASSES'] = len(detect_classes)
+        print(f"🔍 Using custom detection classes: {detect_classes}")
+        print(f"📊 Number of classes: {len(detect_classes)}")
+    else:
+        # 检测所有类别
+        config['CLS_TO_IDX'] = {cls: i for i, cls in enumerate(config['VOC_CLASSES'])}
+        config['NUM_CLASSES'] = len(config['VOC_CLASSES'])
+        print(f"🔍 Using all classes: {config['NUM_CLASSES']} classes")
     
     # 转换元组类型
     if isinstance(config['IMAGE_SIZE'], list):

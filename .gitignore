@@ -25,6 +25,7 @@ __pycache__/
 **/data
 **/data/
 **/dataset/
+**/images/
 
 # 模型文件（匹配所有层级）
 **/models/__pycache__/
