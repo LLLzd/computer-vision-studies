@@ -1,5 +1,7 @@
 # BEV 2D Box 关键帧预标注递推补帧评测工程方案
 
+![Metrics Comparison](output/vis/metrics_comparison.png)
+
 ---
 
 ## 一、工程背景与问题概述
@@ -24,10 +26,33 @@
 
 ---
 
-## 二、整体工程架构
+## 二、评测结果速览
+
+### 2.1 可视化视频
+
+点击播放可视化对比视频：
+
+[![BEV Interpolation Video](https://img.youtube.com/vi/dummy/placeholder.jpg)](output/vis/bev_interp_video.mp4)
+
+### 2.2 雷达图对比
+
+![Radar Chart Comparison](output/vis/radar_chart.png)
+
+### 2.3 关键指标对比
+
+| 方法     | IOU@mean | CE@mean(m) | ADE(m)  | Prec  | Jerk  |
+|----------|----------|------------|---------|-------|-------|
+| linear   | 0.9625   | 0.0968     | 0.0962  | 0.9927| 0.0581|
+| poly     | 0.9129   | 0.1726     | 1.1186  | 0.6857| 0.0785|
+| kalman   | 0.8454   | 0.2503     | 0.3589  | 0.9503| 0.0309|
+| spline   | 0.9877   | 0.0578     | 0.0575  | 0.9942| 0.0092|
+
+---
+
+## 三、整体工程架构
 
 ```Plain Text
-合成数据生成 / 数据加载
+输入数据加载 (input/)
        ↓
 数据预处理模块
        ↓
@@ -37,12 +62,12 @@
        ↓
 结果可视化模块（视频 + 对比图 + 雷达图）
        ↓
-评测报告输出
+评测报告输出 (output/)
 ```
 
 ---
 
-## 三、数据预处理模块设计
+## 四、数据预处理模块设计
 
 ### 1. 数据格式定义
 
@@ -80,7 +105,7 @@
 
 ---
 
-## 四、主流中间帧 Box 递推方法实现（核心）
+## 五、主流中间帧 Box 递推方法实现（核心）
 
 仅基于**帧序列 + 关键帧 Box 坐标**做纯后处理递推，无需图像 / 点云特征，实现 4 类常用方法：
 
@@ -117,7 +142,7 @@
 
 ---
 
-## 五、评测方法与指标设计
+## 六、评测方法与指标设计
 
 以**全帧人工真值 Full GT**为基准，对比各递推方法生成的中间帧 Box 精度。
 
@@ -169,7 +194,7 @@
 
 ---
 
-## 六、可视化模块实现
+## 七、可视化模块实现
 
 无原图依赖，**纯 BEV 俯视视角可视化**，支持单帧查看 + 序列视频导出。
 
@@ -198,7 +223,7 @@
 
 ---
 
-## 七、合成测试场景设计
+## 八、合成测试场景设计
 
 本工程包含合成的真实场景数据，覆盖多种运动模式：
 
@@ -209,18 +234,21 @@
 | 3 | 匀速圆弧 | 测试转弯场景 |
 | 4 | 曲线+剧烈变速 | 最复杂场景，含0速段和急加速 |
 
-生成文件：`data/generate_synthetic_data.py`
+生成文件：`input/generate_synthetic_data.py`
 
 ---
 
-## 八、工程目录结构（可直接落地）
+## 九、工程目录结构（可直接落地）
 
 ```Plain Text
 bev_box_interp_eval/
 ├── config/
 │   └── config.yaml                 # 配置文件（帧间隔、IOU阈值、评测参数）
-├── data/
-│   └── generate_synthetic_data.py  # 合成数据生成（匀速/变速/转弯等）
+├── input/                          # 输入数据目录（已生成的合成数据）
+│   ├── generate_synthetic_data.py  # 合成数据生成脚本
+│   ├── key_frame_boxes.json        # 关键帧标注（约80个）
+│   ├── full_gt_boxes.json          # 全帧真值（约800个）
+│   └── data_metadata.json          # 数据元信息
 ├── preprocess/
 │   └── data_preprocessor.py        # 数据预处理、数据解析、异常过滤
 ├── interp_method/                  # 各类递推算法实现
@@ -235,10 +263,19 @@ bev_box_interp_eval/
 ├── utils/
 │   ├── data_format.py              # 数据结构定义
 │   └── iou_utils.py                # 通用工具（IOU计算、坐标转换）
-├── output/                         # 运行结果目录
+├── output/                         # 运行结果目录（已生成的评测结果）
 │   ├── box_result/                 # 各方法每帧递推 Box 结果
+│   │   ├── linear_results.json
+│   │   ├── poly_results.json
+│   │   ├── kalman_results.json
+│   │   └── spline_results.json
 │   ├── eval_metric/                # mAP、IOU、误差指标表格
+│   │   └── eval_results.json
 │   ├── vis/                        # 对比截图、时序视频、指标折线图
+│   │   ├── bev_interp_video.mp4
+│   │   ├── metrics_comparison.png
+│   │   ├── metrics_comparison_smoothness.png
+│   │   └── radar_chart.png
 │   └── eval_report.md              # 自动生成评测报告
 ├── run_pipeline.py                 # 一键运行全流程：预处理→递推→评测→可视化
 └── README.md                       # 工程使用文档
@@ -246,7 +283,7 @@ bev_box_interp_eval/
 
 ---
 
-## 九、完整使用文档说明（写给其他开发者）
+## 十、完整使用文档说明（写给其他开发者）
 
 ### 1. 环境依赖
 
@@ -256,14 +293,15 @@ pip install numpy matplotlib opencv-python pyyaml
 
 ### 2. 数据准备
 
-1. **使用合成数据（默认）**：运行`data/generate_synthetic_data.py`自动生成；
-2. **使用真实数据**：整理关键帧标注 Box、全帧 GT Box，按指定 JSON 格式放入`data/`；
-3. 配置修改：在`config/config.yaml`配置帧区间、IOU 阈值、选用的递推方法。
+1. **使用已生成的合成数据（默认）**：`input/`目录下已包含生成好的关键帧和全帧真值数据；
+2. **重新生成合成数据**：运行`python input/generate_synthetic_data.py`；
+3. **使用真实数据**：整理关键帧标注 Box、全帧 GT Box，按指定 JSON 格式放入`input/`；
+4. 配置修改：在`config/config.yaml`配置帧区间、IOU 阈值、选用的递推方法。
 
 ### 3. 运行流程
 
 ```bash
-# 一键全流程：合成数据→预处理→多方法递推→评测→可视化→生成报告
+# 一键全流程：加载数据→预处理→多方法递推→评测→可视化→生成报告
 python run_pipeline.py
 ```
 
@@ -289,7 +327,7 @@ Pipeline 执行步骤：
 
 ---
 
-## 十、方案结论与适用建议
+## 十一、方案结论与适用建议
 
 1. 关键帧完全可信，中间帧无真值时，**用全帧人工 GT 作为离线评测基准**是最优方案；
 
@@ -301,27 +339,27 @@ Pipeline 执行步骤：
 
 ---
 
-## 十一、典型评测结果示例（基于合成数据）
-
-| 方法     | IOU@mean | CE@mean(m) | ADE(m)  | Prec  | Jerk  |
-|----------|----------|------------|---------|-------|-------|
-| linear   | 0.9625   | 0.0968     | 0.0962  | 0.9927| 0.0581|
-| poly     | 0.9129   | 0.1726     | 1.1186  | 0.6857| 0.0785|
-| kalman   | 0.8454   | 0.2503     | 0.3589  | 0.9503| 0.0309|
-| spline   | 0.9877   | 0.0578     | 0.0575  | 0.9942| 0.0092|
-
-*注：Spline方法使用了未来信息，在真实在线场景中不可用，仅作为参考上限*
-
----
-
-## 快速开始
+## 十二、快速开始
 
 ```bash
 cd /Users/rik/workspace/study/bev_box_interp_eval
 
-# 运行完整Pipeline（自动生成合成数据并评估）
+# 运行完整Pipeline（使用已生成的合成数据）
 python run_pipeline.py
 
 # 查看生成的报告
 cat output/eval_report.md
 ```
+
+---
+
+## 十三、输出结果预览
+
+### 指标对比图
+![Metrics Comparison](output/vis/metrics_comparison.png)
+
+### 平滑度指标图
+![Smoothness Metrics](output/vis/metrics_comparison_smoothness.png)
+
+### 雷达图
+![Radar Chart](output/vis/radar_chart.png)

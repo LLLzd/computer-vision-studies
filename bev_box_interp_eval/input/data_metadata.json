@@ -1,0 +1,41 @@
+{
+  "range_meters": [
+    200,
+    200
+  ],
+  "origin": "\u5de6\u4e0b\u89d2(0,0)",
+  "num_frames": 200,
+  "time_duration_s": 20.0,
+  "frame_rate_fps": 10.0,
+  "key_frame_interval": 10,
+  "vehicle_config": {
+    "name": "Vehicle",
+    "length": 4.5,
+    "width": 1.8,
+    "color": [
+      100,
+      150,
+      255
+    ],
+    "max_speed": 10.0,
+    "acceleration": 1.5
+  },
+  "trajectories": [
+    {
+      "track_id": "1",
+      "description": "\u8d1d\u585e\u5c14\u66f2\u7ebf\u8fd0\u52a8"
+    },
+    {
+      "track_id": "2",
+      "description": "\u53d8\u52a0\u901f\u76f4\u7ebf\u8fd0\u52a8"
+    },
+    {
+      "track_id": "3",
+      "description": "\u5706\u5f27\u8fd0\u52a8"
+    },
+    {
+      "track_id": "4",
+      "description": "\u66f2\u7ebf+\u53d8\u52a0\u901f\u8fd0\u52a8"
+    }
+  ]
+}

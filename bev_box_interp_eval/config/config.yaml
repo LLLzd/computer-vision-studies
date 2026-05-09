@@ -2,8 +2,8 @@
 
 # 数据路径配置
 data:
-  key_frame_box_path: "data/key_frame_boxes.json"      # 关键帧标注Box
-  full_gt_box_path: "data/full_gt_boxes.json"          # 全帧真值Box
+  key_frame_box_path: "input/key_frame_boxes.json"      # 关键帧标注Box
+  full_gt_box_path: "input/full_gt_boxes.json"          # 全帧真值Box
   output_dir: "output/"
 
 # 评测参数
