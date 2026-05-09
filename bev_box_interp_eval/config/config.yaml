@@ -1,0 +1,36 @@
+# BEV 2D Box 递推补帧评测配置
+
+# 数据路径配置
+data:
+  key_frame_box_path: "data/key_frame_boxes.json"      # 关键帧标注Box
+  full_gt_box_path: "data/full_gt_boxes.json"          # 全帧真值Box
+  output_dir: "output/"
+
+# 评测参数
+evaluation:
+  iou_threshold: 0.5          # IOU匹配阈值
+  iou_thresholds_ap: [0.5, 0.75]  # mAP计算的IOU阈值列表
+  frame_interval: 1            # 帧间隔（用于插值步长计算）
+
+# 递推方法配置
+interp_methods:
+  - "linear"                   # 线性插值
+  - "poly"                     # 二次多项式插值
+  - "kalman"                   # 卡尔曼滤波
+  - "spline"                   # 样条插值
+
+# 可视化配置
+visualization:
+  bev_canvas_size: [2000, 2000]  # BEV画布尺寸 [宽, 高] (200m x 200m, 10像素/米)
+  draw_gt: true                # 绘制真值框
+  draw_methods:                # 绘制各方法结果
+    linear: true
+    poly: true
+    kalman: true
+    spline: true
+  output_video: true           # 是否输出视频
+  video_fps: 10                # 视频帧率
+  dpi: 100                     # 图片分辨率
+
+# 轨迹平滑度计算窗口
+smoothing_window: 3           # 速度突变计算窗口大小
