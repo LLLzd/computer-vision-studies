@@ -1,0 +1,11 @@
+# nuscenes 数据集可视化依赖
+# 注意：以下包已经在基础环境中安装，只需安装 nuscenes-devkit 相关依赖
+nuscenes-devkit==1.2.0
+pyquaternion>=0.9.9
+cachetools>=4.2.0
+descartes>=1.1.0
+fire>=0.4.0
+opencv-python-headless>=4.5.4.58
+parameterized>=0.8.0
+pycocotools>=2.0.1
+Shapely>=2.0.0
