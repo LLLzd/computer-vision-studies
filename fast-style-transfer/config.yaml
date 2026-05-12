@@ -1,0 +1,32 @@
+# 数据配置
+DATA_DIR: "images"
+CONTENT_DIR: "images/content"
+STYLE_DIR: "images/style"
+OUTPUT_DIR: "outputs"
+MODEL_DIR: "models"
+
+# 图像配置
+IMAGE_SIZE: 256  # 训练图像尺寸
+TRANSFER_SIZE: 512  # 风格迁移图像尺寸
+
+# 模型配置
+TRANSFORMER_MODEL: "transformer.pth"
+VGG_MODEL: "vgg19.pth"
+
+# 训练配置
+BATCH_SIZE: 4  # 批量大小
+EPOCHS: 10  # 训练轮数
+LEARNING_RATE: 0.001  # 学习率
+
+# 损失权重
+CONTENT_WEIGHT: 1.0  # 内容损失权重
+STYLE_WEIGHT: 100000.0  # 风格损失权重
+TV_WEIGHT: 0.000001  # 总变分损失权重
+
+# 推理配置
+DEFAULT_CONTENT_IMAGE: "images/content/your_photo.jpg"
+DEFAULT_STYLE_MODEL: "models/candy.pth"
+DEFAULT_OUTPUT_IMAGE: "outputs/output_styled.jpg"
+
+# 设备配置
+DEVICE: "auto"  # auto, cpu, cuda, mps
