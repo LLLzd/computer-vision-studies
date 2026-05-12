@@ -85,9 +85,17 @@ def render_view(
         g = torch.exp(-(dx2 + dy2) / (2 * (r ** 2) + 1e-6))
         a = (opacity[i] * g).clamp(0.0, 0.95)
 
-        patch_alpha = alpha_acc[y0 : y1 + 1, x0 : x1 + 1]
+        # MPS / autograd：禁止「image[slice] = image[slice] * ...」这种对同一 tensor 视图的原地读写，
+        # 否则会触发 version counter 错误。先 clone patch 再写回整图副本。
+        patch_alpha = alpha_acc[y0 : y1 + 1, x0 : x1 + 1].clone()
+        patch_image = image[y0 : y1 + 1, x0 : x1 + 1, :].clone()
         wgt = (1.0 - patch_alpha) * a
-        image[y0 : y1 + 1, x0 : x1 + 1, :] = image[y0 : y1 + 1, x0 : x1 + 1, :] * (1.0 - wgt.unsqueeze(-1)) + wgt.unsqueeze(-1) * colors[i]
-        alpha_acc[y0 : y1 + 1, x0 : x1 + 1] = (patch_alpha + wgt).clamp(0.0, 1.0)
+        new_patch_image = patch_image * (1.0 - wgt.unsqueeze(-1)) + wgt.unsqueeze(-1) * colors[i]
+        new_patch_alpha = (patch_alpha + wgt).clamp(0.0, 1.0)
+
+        image = image.clone()
+        image[y0 : y1 + 1, x0 : x1 + 1, :] = new_patch_image
+        alpha_acc = alpha_acc.clone()
+        alpha_acc[y0 : y1 + 1, x0 : x1 + 1] = new_patch_alpha
 
     return image.clamp(0.0, 1.0)

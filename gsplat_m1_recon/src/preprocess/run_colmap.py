@@ -29,6 +29,23 @@ def run_colmap_pipeline(images_dir: str, workspace: str, camera_model: str = "SI
     sparse_dir.mkdir(parents=True, exist_ok=True)
     txt_dir.mkdir(parents=True, exist_ok=True)
 
+    # 注意：COLMAP 3.9+ 已移除部分旧版 gflags（如 --SiftExtraction.use_gpu）。
+    # Apple Silicon 上通常无 CUDA，默认即为 CPU SIFT，无需再传 use_gpu。
+    images_path = Path(images_dir)
+    if not images_path.is_dir():
+        raise RuntimeError(f"图像目录不存在: {images_path}")
+    has_image = any(
+        p.suffix.lower() in {".jpg", ".jpeg", ".png", ".bmp"}
+        for p in images_path.iterdir()
+        if p.is_file()
+    )
+    if not has_image:
+        raise RuntimeError(
+            f"图像目录中没有可用图像: {images_path}。\n"
+            "请先成功抽帧；若抽帧为 0 张，请降低 config 里 data.sharpness_threshold，"
+            "或设为 0 关闭清晰度过滤。"
+        )
+
     run(
         [
             "colmap",
@@ -36,16 +53,14 @@ def run_colmap_pipeline(images_dir: str, workspace: str, camera_model: str = "SI
             "--database_path",
             str(db_path),
             "--image_path",
-            str(Path(images_dir)),
+            str(images_path),
             "--ImageReader.single_camera",
             "1",
             "--ImageReader.camera_model",
             camera_model,
-            "--SiftExtraction.use_gpu",
-            "0",
         ]
     )
-    run(["colmap", "exhaustive_matcher", "--database_path", str(db_path), "--SiftMatching.use_gpu", "0"])
+    run(["colmap", "exhaustive_matcher", "--database_path", str(db_path)])
     run(
         [
             "colmap",

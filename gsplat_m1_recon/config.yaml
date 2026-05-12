@@ -1,5 +1,4 @@
 project_name: gsplat_m1_recon
-
 paths:
   input_video: input/object.mov
   frames_dir: output/frames
@@ -8,15 +7,13 @@ paths:
   checkpoints_dir: output/checkpoints
   preview_dir: output/previews
   export_dir: output/export
-
 data:
   frame_stride: 2
   max_frames: 220
   resize_width: 960
-  sharpness_threshold: 35.0
-
+  sharpness_threshold: 15.0
 train:
-  mode: standard # quick | standard
+  mode: quick
   seed: 42
   lr: 0.01
   iterations_quick: 120
@@ -31,7 +28,6 @@ train:
   render_height_quick: 224
   render_height_standard: 384
   low_memory: true
-
 preview:
   fps: 24
   frames: 120

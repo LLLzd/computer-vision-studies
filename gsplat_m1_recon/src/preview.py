@@ -4,7 +4,6 @@ import argparse
 from pathlib import Path
 
 import cv2
-import imageio.v2 as imageio
 import numpy as np
 import torch
 from tqdm import tqdm
@@ -31,13 +30,19 @@ def pick_nearest_frame(frames: list[TrainFrame], idx: int) -> TrainFrame:
 
 
 def render_preview_video(config_path: str, ckpt_path: str, out_path: str, n_frames: int = 120, fps: int = 24) -> None:
+    """
+    导出左 GT / 右 Render 的对比视频。
+
+    使用 OpenCV VideoWriter 写 MP4（fourcc mp4v），避免 imageio 在未安装
+    imageio-ffmpeg 时误选 TIFF 插件，导致 append_data 把 fps 传给 TiffWriter 报错。
+    """
     cfg = load_config(config_path)
     device = pick_torch_device()
     model = load_model_from_ckpt(ckpt_path, device)
     model.eval()
 
     frames = build_train_frames(cfg["paths"]["colmap_text_model"], cfg["paths"]["frames_dir"])
-    writer = imageio.get_writer(out_path, fps=fps)
+    writer: cv2.VideoWriter | None = None
 
     for i in tqdm(range(n_frames), desc="preview"):
         frm = pick_nearest_frame(frames, i)
@@ -58,9 +63,22 @@ def render_preview_video(config_path: str, ckpt_path: str, out_path: str, n_fram
         gt = cv2.cvtColor(gt, cv2.COLOR_BGR2RGB)
         gt = cv2.resize(gt, (render_w, render_h), interpolation=cv2.INTER_AREA)
         panel = np.concatenate([gt, pred_np], axis=1)
-        writer.append_data(panel)
+        panel_bgr = cv2.cvtColor(panel, cv2.COLOR_RGB2BGR)
 
-    writer.close()
+        if writer is None:
+            h, w = panel_bgr.shape[:2]
+            fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+            writer = cv2.VideoWriter(out_path, fourcc, float(fps), (w, h))
+            if not writer.isOpened():
+                raise RuntimeError(
+                    f"OpenCV 无法打开 VideoWriter: {out_path}。\n"
+                    "可尝试将 --output 改为以 .avi 结尾，或确认本机 OpenCV 编解码支持。"
+                )
+
+        writer.write(panel_bgr)
+
+    if writer is not None:
+        writer.release()
     print(f"[DONE] 预览视频已生成: {out_path}")
 
 
