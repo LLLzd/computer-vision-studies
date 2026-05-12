@@ -1,0 +1,37 @@
+project_name: gsplat_m1_recon
+
+paths:
+  input_video: input/object.mov
+  frames_dir: output/frames
+  colmap_workspace: output/colmap
+  colmap_text_model: output/colmap/sparse_txt
+  checkpoints_dir: output/checkpoints
+  preview_dir: output/previews
+  export_dir: output/export
+
+data:
+  frame_stride: 2
+  max_frames: 220
+  resize_width: 960
+  sharpness_threshold: 35.0
+
+train:
+  mode: standard # quick | standard
+  seed: 42
+  lr: 0.01
+  iterations_quick: 120
+  iterations_standard: 2200
+  batch_cameras: 1
+  save_every: 100
+  preview_every: 50
+  max_gaussians_quick: 2500
+  max_gaussians_standard: 10000
+  max_visible_splats_quick: 1800
+  max_visible_splats_standard: 5000
+  render_height_quick: 224
+  render_height_standard: 384
+  low_memory: true
+
+preview:
+  fps: 24
+  frames: 120
