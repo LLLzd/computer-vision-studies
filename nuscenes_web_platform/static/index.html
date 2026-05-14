@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NuScenes 本地数据平台</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="brand">NuScenes</div>
+      <nav class="nav-l1">
+        <button type="button" class="l1 active" data-l1="raw">原始数据</button>
+        <button type="button" class="l1" data-l1="label">真值 Label</button>
+      </nav>
+      <div id="nav-l2-raw" class="nav-l2"></div>
+      <div id="nav-l2-label" class="nav-l2 hidden"></div>
+    </aside>
+    <main class="main">
+      <header class="toolbar">
+        <label>场景
+          <select id="scene-select"></select>
+        </label>
+        <label class="grow">类别筛选（搜索）
+          <input id="category-input" type="text" placeholder="如 vehicle.car" list="cat-list" />
+          <datalist id="cat-list"></datalist>
+        </label>
+        <button type="button" id="btn-search">搜索样本</button>
+        <button type="button" id="btn-load-clip">加载当前通道片段</button>
+        <label>步长 <input id="clip-step" type="number" min="1" max="20" value="2" class="num" /></label>
+        <label>最大帧 <input id="clip-max" type="number" min="1" max="200" value="40" class="num" /></label>
+        <button type="button" id="btn-play" disabled>播放</button>
+        <button type="button" id="btn-stop" disabled>停止</button>
+      </header>
+      <div class="panels">
+        <section class="panel results">
+          <h2>结果 <span id="results-meta"></span></h2>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>场景</th><th>时间戳</th><th>sample</th></tr></thead>
+              <tbody id="results-body"></tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <button type="button" id="page-prev">上一页</button>
+            <span id="page-label"></span>
+            <button type="button" id="page-next">下一页</button>
+          </div>
+        </section>
+        <section class="panel viewer">
+          <h2>可视化</h2>
+          <div id="sample-summary" class="muted"></div>
+          <div class="viewer-row">
+            <div class="frame-col">
+              <img id="frame-img" alt="当前帧" />
+              <div class="frame-bar"><span id="frame-label"></span></div>
+            </div>
+            <div class="side-col">
+              <h3>定位 ego_pose</h3>
+              <pre id="ego-json" class="json"></pre>
+              <h3>3D 标注摘要</h3>
+              <div id="ann-short" class="muted"></div>
+            </div>
+          </div>
+          <div class="renders">
+            <figure><figcaption>LiDAR BEV</figcaption><img id="img-lidar" alt="LiDAR BEV" /></figure>
+            <figure><figcaption>3D 框 BEV</figcaption><img id="img-annbev" alt="annotation BEV" /></figure>
+            <figure id="fig-cam2d-wrap"><figcaption>2D 投影（当前相机）</figcaption><img id="img-cam2d" alt="camera 2D" /></figure>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="/assets/app.js" type="module"></script>
+</body>
+</html>
