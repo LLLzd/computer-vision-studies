@@ -112,7 +112,7 @@ function buildCamGridAndChecks() {
 
   for (const ch of state.meta.camera_channels) {
     const slot = document.createElement("div");
-    slot.className = "cam-slot";
+    slot.className = "cam-slot viz-frame";
     slot.dataset.channel = ch;
     const cap = document.createElement("div");
     cap.className = "cam-cap";
@@ -123,6 +123,7 @@ function buildCamGridAndChecks() {
     slot.appendChild(cap);
     slot.appendChild(img);
     grid.appendChild(slot);
+    attachVizFullscreen(slot);
 
     const lab = document.createElement("label");
     lab.className = "chk-row";
@@ -168,6 +169,8 @@ async function loadMetaAndScenes() {
     sel.appendChild(o);
   }
   buildCamGridAndChecks();
+  attachVizFullscreen($("lidar-slot"));
+  attachVizFullscreen($("localization-frame"));
 }
 
 async function fetchEgoTrail() {
@@ -266,6 +269,57 @@ async function runSearch(page) {
   }
 }
 
+function resetVizFsButton(btn) {
+  if (!btn) return;
+  btn.setAttribute("aria-pressed", "false");
+  btn.textContent = "全屏";
+  btn.title = "全屏查看";
+}
+
+function closeAllVizFullscreen() {
+  document.querySelectorAll(".viz-frame.viz-fs").forEach((el) => {
+    el.classList.remove("viz-fs");
+    resetVizFsButton(el.querySelector(".viz-fs-btn"));
+  });
+  document.body.classList.remove("viz-fs-open");
+}
+
+/** Top-right control: fullscreen this panel or restore layout. */
+function attachVizFullscreen(frame) {
+  if (!frame || frame.dataset.vizFsBound === "1") return;
+  frame.dataset.vizFsBound = "1";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "viz-fs-btn";
+  btn.textContent = "全屏";
+  btn.title = "全屏查看";
+  btn.setAttribute("aria-pressed", "false");
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (frame.classList.contains("viz-fs")) {
+      frame.classList.remove("viz-fs");
+      document.body.classList.remove("viz-fs-open");
+      resetVizFsButton(btn);
+    } else {
+      closeAllVizFullscreen();
+      frame.classList.add("viz-fs");
+      document.body.classList.add("viz-fs-open");
+      btn.setAttribute("aria-pressed", "true");
+      btn.textContent = "还原";
+      btn.title = "缩小到原来的大小";
+    }
+  });
+  frame.appendChild(btn);
+}
+
+function wireVizFullscreenEscape() {
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (!document.body.classList.contains("viz-fs-open")) return;
+    closeAllVizFullscreen();
+  });
+}
+
 function escapeHtml(s) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
@@ -355,8 +409,16 @@ function startPlay() {
   state.playTimer = setInterval(() => showFrame(state.frameIdx + 1), 420);
 }
 
+function syncResultsPanelVisibility() {
+  const root = $("panels-root");
+  if (!root) return;
+  const on = $("chk-show-results")?.checked ?? true;
+  root.classList.toggle("hide-results", !on);
+}
+
 function initEvents() {
   $("btn-search").addEventListener("click", () => runSearch(1));
+  $("chk-show-results")?.addEventListener("change", () => syncResultsPanelVisibility());
   $("page-prev").addEventListener("click", () => {
     if (state.searchPage > 1) runSearch(state.searchPage - 1);
   });
@@ -375,9 +437,11 @@ function initEvents() {
 async function boot() {
   initEvents();
   wireGtAndLidarChecks();
+  wireVizFullscreenEscape();
   await loadMetaAndScenes();
   await fetchEgoTrail();
   await runSearch(1);
+  syncResultsPanelVisibility();
   const first = $("results-body").querySelector("tr");
   if (first?.dataset.sample) await selectSample(first.dataset.sample, first);
 }

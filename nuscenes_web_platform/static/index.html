@@ -42,13 +42,17 @@
           <datalist id="cat-list"></datalist>
         </label>
         <button type="button" id="btn-search">搜索样本</button>
+        <label class="chk-inline toolbar-chk">
+          <input type="checkbox" id="chk-show-results" checked />
+          <span>结果列表</span>
+        </label>
         <button type="button" id="btn-load-clip">加载片段</button>
         <label>步长 <input id="clip-step" type="number" min="1" max="20" value="2" class="num" /></label>
         <label>最大帧 <input id="clip-max" type="number" min="1" max="200" value="40" class="num" /></label>
         <button type="button" id="btn-play" disabled>播放</button>
         <button type="button" id="btn-stop" disabled>停止</button>
       </header>
-      <div class="panels">
+      <div class="panels" id="panels-root">
         <section class="panel results">
           <h2>结果 <span id="results-meta"></span></h2>
           <div class="table-wrap">
@@ -70,17 +74,19 @@
           <div class="viewer-body">
             <div class="viewer-visual">
               <div id="cam-grid" class="cam-grid" aria-label="六路相机"></div>
-              <div id="lidar-slot" class="lidar-slot">
+              <div id="lidar-slot" class="lidar-slot viz-frame">
                 <div class="lidar-cap">LiDAR BEV</div>
                 <img id="img-lidar" alt="LiDAR BEV" />
               </div>
             </div>
             <div class="viewer-side">
-              <h3>定位 ego_pose</h3>
-              <pre id="ego-json" class="json"></pre>
-              <h3>轨迹 (world x–y)</h3>
-              <div id="ego-trail-wrap" class="ego-trail-wrap">
-                <svg id="ego-trail-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+              <div id="localization-frame" class="viz-frame localization-frame">
+                <h3>定位 ego_pose</h3>
+                <pre id="ego-json" class="json"></pre>
+                <h3>轨迹 (world x–y)</h3>
+                <div id="ego-trail-wrap" class="ego-trail-wrap">
+                  <svg id="ego-trail-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+                </div>
               </div>
               <h3>3D 标注摘要</h3>
               <div id="ann-short" class="muted"></div>

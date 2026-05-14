@@ -400,15 +400,22 @@ def render_cam2d(
     sample_token: str,
     channel: str = Query(...),
     boxes: bool = Query(True, description="Draw projected 3D boxes; false returns raw camera"),
+    vehicle_only: bool = Query(False, description="If true, only project vehicle categories"),
     nusc: NuScenes = Depends(get_nusc),
     cache: RenderLRU = Depends(get_render_cache),
 ):
-    key = f"cam2d:{sample_token}:{channel}:b{int(boxes)}"
+    key = f"cam2d:{sample_token}:{channel}:b{int(boxes)}:v{int(vehicle_only)}:sd"
     hit = cache.get(key)
     if hit:
         return Response(content=hit, media_type="image/png")
     try:
-        png = render_camera_with_boxes_png(nusc, sample_token, channel, draw_boxes=boxes)
+        png = render_camera_with_boxes_png(
+            nusc,
+            sample_token,
+            channel,
+            draw_boxes=boxes,
+            vehicle_only=vehicle_only,
+        )
     except Exception as e:
         raise HTTPException(500, str(e)) from e
     cache.set(key, png)

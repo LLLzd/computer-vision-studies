@@ -120,6 +120,18 @@ body {
   min-width: 160px;
 }
 
+.chk-inline.toolbar-chk {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.chk-inline.toolbar-chk span {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
 .toolbar input,
 .toolbar select {
   background: var(--bg);
@@ -148,19 +160,48 @@ body {
   cursor: not-allowed;
 }
 
+.toolbar label.grow {
+  flex: 1;
+  min-width: 160px;
+}
+
+.chk-inline.toolbar-chk {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.chk-inline.toolbar-chk span {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
 .panels {
   flex: 1;
   display: flex;
   min-height: 0;
 }
 
+.panels.hide-results .panel.results {
+  display: none;
+}
+
+.panels.hide-results .panel.viewer {
+  flex: 1;
+  width: 100%;
+  max-width: none;
+}
+
 .panel.results {
-  width: 28%;
-  min-width: 200px;
+  width: min(240px, 20vw);
+  min-width: 160px;
+  max-width: 280px;
+  flex-shrink: 0;
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  padding: 0.5rem 0.65rem;
+  padding: 0.45rem 0.5rem;
 }
 
 .panel.viewer {
@@ -258,6 +299,107 @@ tbody tr.selected {
 .viewer-side {
   width: 200px;
   flex-shrink: 0;
+}
+
+/* Expandable viz panels (cam / lidar / localization) */
+.viz-frame {
+  position: relative;
+}
+
+.viz-fs-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 4;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  padding: 0.2rem 0.42rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: rgba(15, 20, 25, 0.88);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.viz-fs-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+body.viz-fs-open {
+  overflow: hidden;
+}
+
+.viz-frame.viz-fs {
+  position: fixed;
+  inset: 0;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0;
+  z-index: 10050;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  box-sizing: border-box;
+  padding: 0.35rem;
+}
+
+.cam-slot.viz-frame.viz-fs {
+  aspect-ratio: unset;
+}
+
+.cam-slot.viz-frame.viz-fs img {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  object-fit: contain;
+}
+
+.lidar-slot.viz-frame.viz-fs {
+  aspect-ratio: unset;
+  max-width: none;
+  align-self: stretch;
+}
+
+.lidar-slot.viz-frame.viz-fs #img-lidar {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  object-fit: contain;
+}
+
+.localization-frame {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0.25rem;
+}
+
+.localization-frame.viz-fs {
+  border-bottom: none;
+  margin-bottom: 0;
+  overflow: auto;
+}
+
+.localization-frame.viz-fs pre.json {
+  max-height: none;
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
+.localization-frame.viz-fs .ego-trail-wrap {
+  flex: 1;
+  min-height: 45vh;
+  height: auto;
+}
+
+.localization-frame.viz-fs #ego-trail-svg {
+  min-height: 200px;
 }
 
 .cam-grid {
