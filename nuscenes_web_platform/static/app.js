@@ -56,15 +56,9 @@ function readLayerSettings() {
   };
 }
 
-function cacheBustQuery() {
-  const i = isPlaying() ? state.frameIdx : 0;
-  return `_=${Date.now()}&i=${i}`;
-}
-
 function applyVisuals(sampleToken) {
   if (!sampleToken || !state.meta) return;
   const L = readLayerSettings();
-  const q = cacheBustQuery();
   const detail = state.cachedDetail;
 
   for (const ch of state.meta.camera_channels) {
@@ -85,9 +79,9 @@ function applyVisuals(sampleToken) {
 
     slot.classList.remove("inactive");
     if (L.gtCamProj) {
-      img.src = `/api/render/camera_2d?sample_token=${encodeURIComponent(sampleToken)}&channel=${encodeURIComponent(ch)}&boxes=true&${q}`;
+      img.src = `/api/render/camera_2d?sample_token=${encodeURIComponent(sampleToken)}&channel=${encodeURIComponent(ch)}&boxes=true`;
     } else {
-      img.src = `/api/samples/${encodeURIComponent(sampleToken)}/raw_image/${encodeURIComponent(ch)}?${q}`;
+      img.src = `/api/samples/${encodeURIComponent(sampleToken)}/raw_image/${encodeURIComponent(ch)}`;
     }
   }
 
@@ -99,7 +93,7 @@ function applyVisuals(sampleToken) {
   } else {
     lidarSlot.classList.remove("inactive");
     const boxes = L.gtLidarBoxes ? "true" : "false";
-    lidarImg.src = `/api/render/lidar_bev?sample_token=${encodeURIComponent(sampleToken)}&boxes=${boxes}&${q}`;
+    lidarImg.src = `/api/render/lidar_bev?sample_token=${encodeURIComponent(sampleToken)}&boxes=${boxes}`;
   }
 }
 
@@ -406,7 +400,7 @@ function startPlay() {
   if (!state.frames.length) return;
   stopPlay();
   $("btn-stop").disabled = false;
-  state.playTimer = setInterval(() => showFrame(state.frameIdx + 1), 420);
+  state.playTimer = setInterval(() => showFrame(state.frameIdx + 1), 520);
 }
 
 function syncResultsPanelVisibility() {

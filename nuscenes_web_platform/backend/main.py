@@ -31,6 +31,9 @@ from backend.visuals import (
 
 from utils import load_nuscenes  # type: ignore[import-untyped]
 
+# Browsers can cache aggressively: URLs map to fixed dataset files / rendered keys.
+_IMAGE_CACHE_HEADERS = {"Cache-Control": "public, max-age=31536000, immutable"}
+
 
 def _radar_channels(nusc: NuScenes) -> list[str]:
     """Discover RADAR channels without scanning the full sample_data table."""
@@ -71,7 +74,7 @@ async def lifespan(app: FastAPI):
     nusc = load_nuscenes(str(settings.nuscenes_dataroot), settings.nuscenes_version)
     app.state.nusc = nusc
     app.state.settings = settings
-    app.state.render_cache = RenderLRU(96)
+    app.state.render_cache = RenderLRU(512)
     # scene_token -> ordered sample tokens
     scene_samples: dict[str, list[str]] = {}
     for scene in nusc.scene:
@@ -233,7 +236,7 @@ def sample_raw_image_file(
     sd = nusc.get("sample_data", s["data"][channel])
     path = resolve_under_dataroot(Path(nusc.dataroot), sd["filename"])
     mime, _ = mimetypes.guess_type(str(path))
-    return FileResponse(path, media_type=mime or "image/jpeg")
+    return FileResponse(path, media_type=mime or "image/jpeg", headers=_IMAGE_CACHE_HEADERS)
 
 
 @app.get("/api/samples/{sample_token}/annotations")
@@ -386,13 +389,13 @@ def render_lidar(
     key = f"lidar:{sample_token}:b{int(boxes)}"
     hit = cache.get(key)
     if hit:
-        return Response(content=hit, media_type="image/png")
+        return Response(content=hit, media_type="image/png", headers=_IMAGE_CACHE_HEADERS)
     try:
         png = render_lidar_bev_png(nusc, sample_token, draw_boxes=boxes)
     except Exception as e:
         raise HTTPException(500, str(e)) from e
     cache.set(key, png)
-    return Response(content=png, media_type="image/png")
+    return Response(content=png, media_type="image/png", headers=_IMAGE_CACHE_HEADERS)
 
 
 @app.get("/api/render/camera_2d")
@@ -407,7 +410,7 @@ def render_cam2d(
     key = f"cam2d:{sample_token}:{channel}:b{int(boxes)}:v{int(vehicle_only)}:sd"
     hit = cache.get(key)
     if hit:
-        return Response(content=hit, media_type="image/png")
+        return Response(content=hit, media_type="image/png", headers=_IMAGE_CACHE_HEADERS)
     try:
         png = render_camera_with_boxes_png(
             nusc,
@@ -419,7 +422,7 @@ def render_cam2d(
     except Exception as e:
         raise HTTPException(500, str(e)) from e
     cache.set(key, png)
-    return Response(content=png, media_type="image/png")
+    return Response(content=png, media_type="image/png", headers=_IMAGE_CACHE_HEADERS)
 
 
 @app.get("/api/render/ann_bev")
@@ -431,13 +434,13 @@ def render_ann_bev(
     key = f"annbev:{sample_token}"
     hit = cache.get(key)
     if hit:
-        return Response(content=hit, media_type="image/png")
+        return Response(content=hit, media_type="image/png", headers=_IMAGE_CACHE_HEADERS)
     try:
         png = render_annotation_bev_png(nusc, sample_token)
     except Exception as e:
         raise HTTPException(500, str(e)) from e
     cache.set(key, png)
-    return Response(content=png, media_type="image/png")
+    return Response(content=png, media_type="image/png", headers=_IMAGE_CACHE_HEADERS)
 
 
 @app.get("/")
