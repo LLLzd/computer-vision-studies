@@ -52,7 +52,12 @@ def render_view(
     keep_ids = idx_valid[in_view]
 
     if keep_ids.numel() > max_visible_splats:
-        sel = torch.argsort(z)[:max_visible_splats]
+        # 不能只保留「z 最小」的 K 个：会丢掉远景/背景，训练里背景会漂成灰白。
+        # 按深度均匀抽 K 个索引，再交给后面的 z 降序合成。
+        n = z.shape[0]
+        idx_order = torch.argsort(z)
+        pos = torch.linspace(0, n - 1, max_visible_splats, device=device).long()
+        sel = idx_order[pos]
         u, v, z, keep_ids = u[sel], v[sel], z[sel], keep_ids[sel]
 
     colors = model.colors()[keep_ids]
@@ -60,7 +65,9 @@ def render_view(
     scales = model.scales()[keep_ids].mean(dim=1)
 
     radius = (fx * scales / (z + 1e-6)).clamp(1.0, radius_px_max)
-    order = torch.argsort(z)  # 近到远，前向合成
+    # 前向 alpha 合成：必须先画远处、再画近处（近处盖住远处）。
+    # 相机前向为 +Z 时，z 越大通常越远，故按 z 降序排列。
+    order = torch.argsort(z, descending=True)
     u, v, radius, colors, opacity = u[order], v[order], radius[order], colors[order], opacity[order]
 
     image = torch.ones((h, w, 3), device=device) * bg_color

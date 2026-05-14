@@ -15,6 +15,7 @@ from core.renderer import render_view, resize_intrinsics
 from utils.colmap_io import qvec_to_rotmat, read_cameras_txt, read_images_txt, read_points3d_txt
 from utils.config_utils import ensure_dirs, load_config
 from utils.device_utils import memory_report_gb, pick_torch_device
+from utils.natural_sort import natural_sort_key
 
 
 @dataclass
@@ -134,7 +135,7 @@ def train(config_path: str) -> None:
         [
             {"params": [model.xyz], "lr": cfg["train"]["lr"]},
             {"params": [model.log_scales], "lr": cfg["train"]["lr"] * 0.5},
-            {"params": [model.color_logits], "lr": cfg["train"]["lr"] * 0.2},
+            {"params": [model.color_logits], "lr": cfg["train"]["lr"] * 0.5},
             {"params": [model.opacity_logits], "lr": cfg["train"]["lr"] * 0.5},
         ]
     )
@@ -180,6 +181,46 @@ def train(config_path: str) -> None:
             preview = (pred.detach().cpu().numpy() * 255).astype(np.uint8)
             out = Path(cfg["paths"]["preview_dir"]) / f"preview_{step:06d}.jpg"
             cv2.imwrite(str(out), cv2.cvtColor(preview, cv2.COLOR_RGB2BGR))
+            # 同视角：原图 | 当前渲染 | 误差（训练中随机抽到的视角）
+            from compare_vis import save_triple_panel
+
+            save_triple_panel(
+                target,
+                pred,
+                Path(cfg["paths"]["preview_dir"]) / f"compare_trainstep_{step:06d}.jpg",
+                title=f"step {step} random cam | GT | Pred | |err|×8 | heatmap | SSIM",
+            )
+
+    # 训练结束：固定多张「训练相机」下的 GT vs 渲染 + 少量绕 Y 新视角（无 GT）
+    from compare_vis import export_novel_yaw_views, export_same_view_eval_grid
+
+    eval_cfg = cfg.get("eval") or {}
+    num_panels = int(eval_cfg.get("num_same_view_panels", 6))
+    novel_yaws = list(eval_cfg.get("novel_yaws", [-15, -8, 0, 8, 15]))
+    eval_dir = Path(cfg["paths"]["preview_dir"]) / "eval_final"
+    frames_sorted = sorted(frames, key=lambda f: natural_sort_key(f.image_path))
+    export_same_view_eval_grid(
+        model,
+        frames_sorted,
+        out_dir=eval_dir / "same_view",
+        device=device,
+        render_h=render_h,
+        max_visible_splats=max_visible_splats,
+        radius_px_max=10.0 if mode == "standard" else 8.0,
+        max_panels=num_panels,
+    )
+    mid = frames_sorted[len(frames_sorted) // 2]
+    export_novel_yaw_views(
+        model,
+        mid,
+        out_dir=eval_dir / "novel_view",
+        device=device,
+        render_h=render_h,
+        max_visible_splats=max_visible_splats,
+        radius_px_max=10.0 if mode == "standard" else 8.0,
+        yaw_degrees=novel_yaws,
+    )
+    print(f"[INFO] 评测对比图已写入: {eval_dir}（same_view: GT|Pred|误差；novel_view: 仅渲染）")
 
     print(f"[DONE] training complete, checkpoints at {cfg['paths']['checkpoints_dir']}")
 

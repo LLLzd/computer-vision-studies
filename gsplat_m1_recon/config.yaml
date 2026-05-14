@@ -13,7 +13,7 @@ data:
   resize_width: 960
   sharpness_threshold: 15.0
 train:
-  mode: quick
+  mode: standard
   seed: 42
   lr: 0.01
   iterations_quick: 120
@@ -31,3 +31,11 @@ train:
 preview:
   fps: 24
   frames: 120
+eval:
+  num_same_view_panels: 6
+  novel_yaws:
+  - -15
+  - -8
+  - 0
+  - 8
+  - 15

@@ -41,6 +41,9 @@ gsplat_m1_recon/
     ├── run_pipeline.py              # 全流程入口：抽帧->COLMAP->训练->预览->导出
     ├── train.py                     # 3DGS 训练主脚本（M1 参数优化）
     ├── preview.py                   # 导出 GT/Render 对比视频
+    ├── compare_vis.py               # 五列对比图（GT|Pred|误差×8|热力图|SSIM）+ 新视角导出
+    ├── eval_compare.py              # 仅从 checkpoint 重新导出对比图
+    ├── render_trajectory_compare.py # 原视频等时长 | 沿 COLMAP 轨迹渲染 并排 MP4
     ├── export_model.py              # 导出 NPZ/PLY
     ├── core/
     │   ├── gaussian_model.py        # 高斯参数模型
@@ -51,7 +54,9 @@ gsplat_m1_recon/
     └── utils/
         ├── config_utils.py          # 配置读取/目录创建
         ├── device_utils.py          # MPS 设备选择与内存统计
-        └── colmap_io.py             # 解析 COLMAP 文本模型
+        ├── colmap_io.py             # 解析 COLMAP 文本模型
+        ├── camera_pose.py           # 世界系绕 Y 旋转（新视角外参）
+        └── natural_sort.py          # 帧文件名自然排序
 ```
 
 ---
@@ -161,9 +166,18 @@ python src/train.py --config config.yaml
 
 训练输出：
 - `output/checkpoints/step_xxxxxx.pt`
-- `output/previews/preview_xxxxxx.jpg`
+- `output/previews/preview_xxxxxx.jpg`（仅当前随机视角的渲染）
+- `output/previews/compare_trainstep_xxxxxx.jpg`（**5 列**：GT | Pred | \|err\|×8 灰度 | 误差 turbo 热力图+colorbar | SSIM+colorbar，训练中周期性保存）
+- `output/previews/eval_final/same_view/`：训练结束自动生成多张同上 **5 列**对比（固定抽帧）
+- `output/previews/eval_final/novel_view/`：以序列中间帧为基准，绕世界 Y 轴旋转得到的 **新视角纯渲染**（无 GT，用于看几何是否连贯）
 
-### Step 4: 生成对比预览视频（GT vs Render）
+仅已有 checkpoint、想重新导出对比图时：
+
+```bash
+python src/eval_compare.py --config config.yaml --checkpoint output/checkpoints/step_000120.pt
+```
+
+### Step 4: 生成对比预览视频（GT vs Render，短片段）
 
 ```bash
 python src/preview.py \
@@ -172,6 +186,39 @@ python src/preview.py \
   --output output/previews/compare.mp4 \
   --frames 120 \
   --fps 24
+```
+
+### Step 4b: 原视频等时长「左真右渲」轨迹对比（推荐训练完成后）
+
+**左**：原视频帧。**右**：与训练时相同量级的 **splat 神经渲染图**（非点云、非高斯中心），在 `train.render_height_*` 对应分辨率上合成后再放大到与左图同尺寸；若在整幅 1080p 上直接 splat，`max_visible_splats` 上限会让画面像稀疏点云。
+
+与输入 `object.mov` **同播放时长**；默认逐帧对应，亦可用 `--frame_stride N` 每 N 帧采样 1 次（输出 fps 自动为 `fps*M/n`，M 为写入帧数）。相机在 COLMAP 排序后的关键帧之间 **SE(3) 插值**（平移线性 + 旋转 slerp），内参缩放到渲染分辨率。默认使用 `output/checkpoints/` 下 **step 最大** 的模型。
+
+```bash
+python src/render_trajectory_compare.py \
+  --config config.yaml \
+  --output output/previews/trajectory_compare_full.mp4
+```
+
+指定 checkpoint 或视频路径：
+
+```bash
+python src/render_trajectory_compare.py \
+  --config config.yaml \
+  --checkpoint output/checkpoints/step_002200.pt \
+  --video input/object.MOV \
+  --output output/previews/trajectory_compare_full.mp4
+```
+
+> 全片逐帧渲染较慢；可用 `--render_height 320` 降低内部渲染高度以提速，或 **`--frame_stride 30`** 约 30 倍减少渲染次数（**总时长仍与源视频一致**）。
+
+**30 倍稀疏采样示例：**
+
+```bash
+python src/render_trajectory_compare.py \
+  --config config.yaml \
+  --frame_stride 30 \
+  --output output/previews/trajectory_compare_30x.mp4
 ```
 
 ### Step 5: 导出模型
@@ -198,7 +245,11 @@ python src/export_model.py \
 4. 先跑 `./scripts/run_quick.sh` 验证流程。
 5. 再跑 `./scripts/run_standard.sh` 获取可用质量结果。
 6. 查看：
-   - `output/previews/compare.mp4`（左 GT，右渲染）
+   - `output/previews/compare_trainstep_*.jpg`：训练中 **5 列**对比（含误差热力图与 SSIM）
+   - `output/previews/eval_final/same_view/`：训练结束 **5 列**对比（同上）
+   - `output/previews/eval_final/novel_view/`：绕 Y 轴小角度 **新视角渲染**（无 GT）
+   - `output/previews/compare.mp4`（左 GT，右渲染，短片段）
+   - `output/previews/trajectory_compare_full.mp4`（运行 `render_trajectory_compare.py`：与 **原视频等时长** 左真右渲）
    - `output/export/gaussians_model.npz` / `gaussians_points.ply`
 
 ---
@@ -219,6 +270,11 @@ python src/export_model.py \
 - `train.max_gaussians_*`：高斯总量上限。
 - `train.max_visible_splats_*`：每次渲染可见高斯上限，显著影响速度/内存。
 - `train.render_height_*`：训练渲染高度，影响画质与速度。
+
+### 评测可视化（eval）
+
+- `eval.num_same_view_panels`：训练结束导出多少张「同视角 5 列对比」。
+- `eval.novel_yaws`：新视角相对中间帧绕世界 Y 轴的偏角列表（度）；纯渲染无 GT。
 
 ---
 
