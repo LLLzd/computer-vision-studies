@@ -8,14 +8,29 @@
 </head>
 <body>
   <div class="app">
-    <aside class="sidebar" aria-label="主导航">
+    <aside class="sidebar" aria-label="图层与通道">
       <div class="brand">NuScenes</div>
-      <nav class="nav-l1">
-        <button type="button" class="l1 active" data-l1="raw">原始数据</button>
-        <button type="button" class="l1" data-l1="label">真值 Label</button>
-      </nav>
-      <div id="nav-l2-raw" class="nav-l2"></div>
-      <div id="nav-l2-label" class="nav-l2 hidden"></div>
+      <section class="nav-group">
+        <h3 class="nav-h">传感器</h3>
+        <p class="hint">勾选显示；未选为黑底</p>
+        <div id="chk-cams" class="chk-list"></div>
+        <label class="chk-row">
+          <input type="checkbox" id="chk-lidar" checked />
+          <span>LiDAR BEV</span>
+        </label>
+      </section>
+      <section class="nav-group">
+        <h3 class="nav-h">真值叠加</h3>
+        <p class="hint">可与传感器同时开启</p>
+        <label class="chk-row">
+          <input type="checkbox" id="chk-gt-lidar" />
+          <span>LiDAR BEV 上 3D 框</span>
+        </label>
+        <label class="chk-row">
+          <input type="checkbox" id="chk-gt-cam" />
+          <span>相机上投影 3D 框</span>
+        </label>
+      </section>
     </aside>
     <main class="main">
       <header class="toolbar">
@@ -27,7 +42,7 @@
           <datalist id="cat-list"></datalist>
         </label>
         <button type="button" id="btn-search">搜索样本</button>
-        <button type="button" id="btn-load-clip">加载当前通道片段</button>
+        <button type="button" id="btn-load-clip">加载片段</button>
         <label>步长 <input id="clip-step" type="number" min="1" max="20" value="2" class="num" /></label>
         <label>最大帧 <input id="clip-max" type="number" min="1" max="200" value="40" class="num" /></label>
         <button type="button" id="btn-play" disabled>播放</button>
@@ -51,22 +66,25 @@
         <section class="panel viewer">
           <h2>可视化</h2>
           <div id="sample-summary" class="muted"></div>
-          <div class="viewer-row">
-            <div class="frame-col">
-              <img id="frame-img" alt="当前帧" />
-              <div class="frame-bar"><span id="frame-label"></span></div>
+          <div id="playback-bar" class="playback-bar muted hidden"></div>
+          <div class="viewer-body">
+            <div class="viewer-visual">
+              <div id="cam-grid" class="cam-grid" aria-label="六路相机"></div>
+              <div id="lidar-slot" class="lidar-slot">
+                <div class="lidar-cap">LiDAR BEV</div>
+                <img id="img-lidar" alt="LiDAR BEV" />
+              </div>
             </div>
-            <div class="side-col">
+            <div class="viewer-side">
               <h3>定位 ego_pose</h3>
               <pre id="ego-json" class="json"></pre>
+              <h3>轨迹 (world x–y)</h3>
+              <div id="ego-trail-wrap" class="ego-trail-wrap">
+                <svg id="ego-trail-svg" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+              </div>
               <h3>3D 标注摘要</h3>
               <div id="ann-short" class="muted"></div>
             </div>
-          </div>
-          <div class="renders">
-            <figure><figcaption>LiDAR BEV</figcaption><img id="img-lidar" alt="LiDAR BEV" /></figure>
-            <figure><figcaption>3D 框 BEV</figcaption><img id="img-annbev" alt="annotation BEV" /></figure>
-            <figure id="fig-cam2d-wrap"><figcaption>2D 投影（当前相机）</figcaption><img id="img-cam2d" alt="camera 2D" /></figure>
           </div>
         </section>
       </div>

@@ -1,17 +1,18 @@
 const state = {
   meta: null,
   scenes: [],
-  l1: "raw",
-  channel: "CAM_FRONT",
   searchPage: 1,
   searchTotal: 0,
   frames: [],
   frameIdx: 0,
   playTimer: null,
   selectedSample: null,
+  cachedDetail: null,
+  egoTrail: null,
 };
 
 const $ = (id) => document.getElementById(id);
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 async function api(path) {
   const r = await fetch(path);
@@ -26,69 +27,126 @@ async function api(path) {
 
 function channelLabel(ch) {
   const map = {
-    CAM_FRONT_LEFT: "左前相机",
-    CAM_FRONT: "前相机",
-    CAM_FRONT_RIGHT: "右前相机",
-    CAM_BACK_LEFT: "左后相机",
-    CAM_BACK: "后相机",
-    CAM_BACK_RIGHT: "右后相机",
-    LIDAR_TOP: "顶部 LiDAR",
+    CAM_FRONT_LEFT: "左前",
+    CAM_FRONT: "前",
+    CAM_FRONT_RIGHT: "右前",
+    CAM_BACK_LEFT: "左后",
+    CAM_BACK: "后",
+    CAM_BACK_RIGHT: "右后",
+    LIDAR_TOP: "LiDAR",
   };
   return map[ch] || ch;
 }
 
-function mkL2Btn(value, text, forceL1) {
-  const b = document.createElement("button");
-  b.type = "button";
-  b.className = "l2";
-  b.dataset.channel = value;
-  b.textContent = text;
-  b.addEventListener("click", () => {
-    document.querySelectorAll(".nav-l2 .l2").forEach((x) => x.classList.remove("active"));
-    b.classList.add("active");
-    state.l1 = forceL1 || "raw";
-    state.channel = value;
-    syncL1UI();
-    $("fig-cam2d-wrap").classList.toggle("hidden", !String(value).startsWith("2d:"));
-    refreshSampleView();
-  });
-  return b;
+function isPlaying() {
+  return state.playTimer != null;
 }
 
-function buildNavL2() {
-  const raw = $("nav-l2-raw");
-  const label = $("nav-l2-label");
-  raw.innerHTML = "";
-  label.innerHTML = "";
+function readLayerSettings() {
+  const cams = {};
+  for (const ch of state.meta?.camera_channels || []) {
+    const cb = document.querySelector(`#chk-cam-${ch}`);
+    cams[ch] = cb ? cb.checked : false;
+  }
+  return {
+    cameras: cams,
+    lidar: $("chk-lidar")?.checked ?? false,
+    gtLidarBoxes: $("chk-gt-lidar")?.checked ?? false,
+    gtCamProj: $("chk-gt-cam")?.checked ?? false,
+  };
+}
+
+function cacheBustQuery() {
+  const i = isPlaying() ? state.frameIdx : 0;
+  return `_=${Date.now()}&i=${i}`;
+}
+
+function applyVisuals(sampleToken) {
+  if (!sampleToken || !state.meta) return;
+  const L = readLayerSettings();
+  const q = cacheBustQuery();
+  const detail = state.cachedDetail;
+
+  for (const ch of state.meta.camera_channels) {
+    const img = document.querySelector(`#cam-img-${ch}`);
+    const slot = img?.closest(".cam-slot");
+    if (!img || !slot) continue;
+
+    if (!L.cameras[ch]) {
+      img.removeAttribute("src");
+      slot.classList.add("inactive");
+      continue;
+    }
+    if (!isPlaying() && detail && !detail.data_channels.includes(ch)) {
+      img.removeAttribute("src");
+      slot.classList.add("inactive");
+      continue;
+    }
+
+    slot.classList.remove("inactive");
+    if (L.gtCamProj) {
+      img.src = `/api/render/camera_2d?sample_token=${encodeURIComponent(sampleToken)}&channel=${encodeURIComponent(ch)}&boxes=true&${q}`;
+    } else {
+      img.src = `/api/samples/${encodeURIComponent(sampleToken)}/raw_image/${encodeURIComponent(ch)}?${q}`;
+    }
+  }
+
+  const lidarImg = $("img-lidar");
+  const lidarSlot = $("lidar-slot");
+  if (!L.lidar) {
+    lidarImg.removeAttribute("src");
+    lidarSlot.classList.add("inactive");
+  } else {
+    lidarSlot.classList.remove("inactive");
+    const boxes = L.gtLidarBoxes ? "true" : "false";
+    lidarImg.src = `/api/render/lidar_bev?sample_token=${encodeURIComponent(sampleToken)}&boxes=${boxes}&${q}`;
+  }
+}
+
+function buildCamGridAndChecks() {
+  const grid = $("cam-grid");
+  const chkCams = $("chk-cams");
+  grid.innerHTML = "";
+  chkCams.innerHTML = "";
   if (!state.meta) return;
 
-  raw.appendChild(
-    Object.assign(document.createElement("p"), { className: "hint", textContent: "传感器 / 数据类型" }),
-  );
   for (const ch of state.meta.camera_channels) {
-    raw.appendChild(mkL2Btn(ch, `${channelLabel(ch)} (${ch})`));
-  }
-  raw.appendChild(mkL2Btn("LIDAR_TOP", `${channelLabel("LIDAR_TOP")} (BEV 渲染)`));
-  for (const ch of state.meta.radar_channels) {
-    raw.appendChild(mkL2Btn(ch, ch));
-  }
+    const slot = document.createElement("div");
+    slot.className = "cam-slot";
+    slot.dataset.channel = ch;
+    const cap = document.createElement("div");
+    cap.className = "cam-cap";
+    cap.textContent = `${channelLabel(ch)} · ${ch}`;
+    const img = document.createElement("img");
+    img.alt = ch;
+    img.id = `cam-img-${ch}`;
+    slot.appendChild(cap);
+    slot.appendChild(img);
+    grid.appendChild(slot);
 
-  label.appendChild(
-    Object.assign(document.createElement("p"), { className: "hint", textContent: "标注 / 定位" }),
-  );
-  for (const ch of state.meta.camera_channels) {
-    label.appendChild(mkL2Btn(`2d:${ch}`, `2D 投影 (${channelLabel(ch)})`, "label"));
+    const lab = document.createElement("label");
+    lab.className = "chk-row";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.id = `chk-cam-${ch}`;
+    cb.checked = true;
+    cb.addEventListener("change", () => {
+      if (state.selectedSample) applyVisuals(state.selectedSample);
+    });
+    lab.appendChild(cb);
+    const span = document.createElement("span");
+    span.textContent = `${channelLabel(ch)} (${ch})`;
+    lab.appendChild(span);
+    chkCams.appendChild(lab);
   }
-  label.appendChild(mkL2Btn("3d:bev", "3D 物体 BEV", "label"));
-  label.appendChild(mkL2Btn("loc:ego", "Localization (ego)", "label"));
 }
 
-function syncL1UI() {
-  document.querySelectorAll(".nav-l1 .l1").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.l1 === state.l1);
+function wireGtAndLidarChecks() {
+  ["chk-lidar", "chk-gt-lidar", "chk-gt-cam"].forEach((id) => {
+    $(id)?.addEventListener("change", () => {
+      if (state.selectedSample) applyVisuals(state.selectedSample);
+    });
   });
-  $("nav-l2-raw").classList.toggle("hidden", state.l1 !== "raw");
-  $("nav-l2-label").classList.toggle("hidden", state.l1 !== "label");
 }
 
 async function loadMetaAndScenes() {
@@ -109,10 +167,77 @@ async function loadMetaAndScenes() {
     o.textContent = `${s.name} (${s.nbr_samples})`;
     sel.appendChild(o);
   }
-  buildNavL2();
-  const firstCam = state.meta.camera_channels[0] || "CAM_FRONT";
-  state.channel = firstCam;
-  document.querySelector(`#nav-l2-raw .l2[data-channel="${firstCam}"]`)?.classList.add("active");
+  buildCamGridAndChecks();
+}
+
+async function fetchEgoTrail() {
+  const sc = currentSceneToken();
+  if (!sc) return;
+  try {
+    state.egoTrail = await api(`/api/scenes/${encodeURIComponent(sc)}/ego_trail`);
+  } catch {
+    state.egoTrail = null;
+  }
+  renderEgoTrailSvg();
+  if (state.selectedSample) updateTrailMarker(state.selectedSample);
+}
+
+function renderEgoTrailSvg() {
+  const svg = $("ego-trail-svg");
+  if (!svg) return;
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const pts = state.egoTrail?.points;
+  if (!pts?.length) {
+    svg.removeAttribute("viewBox");
+    return;
+  }
+  const xs = pts.map((p) => p.x);
+  const ys = pts.map((p) => p.y);
+  const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+  const pad = span * 0.08 + 2;
+  const minx = Math.min(...xs) - pad;
+  const maxx = Math.max(...xs) + pad;
+  const miny = Math.min(...ys) - pad;
+  const maxy = Math.max(...ys) + pad;
+  const w = Math.max(maxx - minx, 1e-3);
+  const h = Math.max(maxy - miny, 1e-3);
+  svg.setAttribute("viewBox", `${minx} ${miny} ${w} ${h}`);
+
+  const poly = document.createElementNS(SVG_NS, "polyline");
+  poly.setAttribute("class", "trail-line");
+  poly.setAttribute("points", pts.map((p) => `${p.x},${p.y}`).join(" "));
+  svg.appendChild(poly);
+
+  const c = document.createElementNS(SVG_NS, "circle");
+  c.setAttribute("class", "trail-cursor");
+  c.setAttribute("r", String(Math.max(Math.min(w, h) * 0.025, 0.35)));
+  c.setAttribute("visibility", "hidden");
+  svg.appendChild(c);
+}
+
+function updateTrailMarker(sampleToken) {
+  const svg = $("ego-trail-svg");
+  const cur = svg?.querySelector(".trail-cursor");
+  if (!cur || !state.egoTrail?.points) return;
+  const pt = state.egoTrail.points.find((p) => p.sample_token === sampleToken);
+  if (!pt) {
+    cur.setAttribute("visibility", "hidden");
+    return;
+  }
+  cur.setAttribute("visibility", "visible");
+  cur.setAttribute("cx", String(pt.x));
+  cur.setAttribute("cy", String(pt.y));
+}
+
+async function refreshSidePanel(sampleToken) {
+  if (!sampleToken) return;
+  try {
+    const ego = await api(`/api/samples/${sampleToken}/ego`);
+    $("ego-json").textContent = JSON.stringify(ego, null, 2);
+  } catch (e) {
+    $("ego-json").textContent = `ego 加载失败: ${e.message}`;
+  }
+  updateTrailMarker(sampleToken);
 }
 
 function currentSceneToken() {
@@ -145,7 +270,16 @@ function escapeHtml(s) {
   return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
+function stopPlay() {
+  if (state.playTimer) clearInterval(state.playTimer);
+  state.playTimer = null;
+  $("btn-stop").disabled = true;
+  $("btn-play").disabled = state.frames.length === 0;
+  $("playback-bar").classList.add("hidden");
+}
+
 async function selectSample(sampleToken, tr) {
+  stopPlay();
   state.selectedSample = sampleToken;
   document.querySelectorAll("#results-body tr").forEach((r) => r.classList.remove("selected"));
   if (tr) tr.classList.add("selected");
@@ -166,113 +300,62 @@ async function loadAnnSummary(st) {
 
 async function refreshSampleView() {
   if (!state.selectedSample) {
-    $("sample-summary").textContent = "在结果中点击一条样本；左侧选择通道。";
+    $("sample-summary").textContent = "在结果中点击一条样本；左侧勾选要显示的传感器与真值。";
     return;
   }
   const st = state.selectedSample;
   const detail = await api(`/api/samples/${st}`);
+  state.cachedDetail = detail;
   $("sample-summary").textContent = `${detail.scene_name} · ${detail.data_channels.length} 通道 · ${detail.ann_count} 个标注`;
 
-  const ego = await api(`/api/samples/${st}/ego`);
-  $("ego-json").textContent = JSON.stringify(ego, null, 2);
-
-  const ch = state.channel;
-  const bust = `&t=${Date.now()}`;
-
-  $("img-lidar").src = `/api/render/lidar_bev?sample_token=${encodeURIComponent(st)}${bust}`;
-  $("img-annbev").src = `/api/render/ann_bev?sample_token=${encodeURIComponent(st)}${bust}`;
-
-  if (String(ch).startsWith("2d:")) {
-    const cam = ch.slice(3);
-    const url = `/api/render/camera_2d?sample_token=${encodeURIComponent(st)}&channel=${encodeURIComponent(cam)}${bust}`;
-    $("frame-img").src = url;
-    $("img-cam2d").src = url;
-    $("fig-cam2d-wrap").classList.remove("hidden");
-    $("frame-label").textContent = `2D 投影 · ${cam}`;
-  } else {
-    $("fig-cam2d-wrap").classList.add("hidden");
-
-    if (ch === "3d:bev") {
-      $("frame-img").src = `/api/render/ann_bev?sample_token=${encodeURIComponent(st)}${bust}`;
-      $("frame-label").textContent = "3D 标注 BEV";
-    } else if (ch === "loc:ego") {
-      $("frame-img").removeAttribute("src");
-      $("frame-label").textContent = "定位数据见右侧 ego_pose JSON";
-    } else if (ch === "LIDAR_TOP") {
-      $("frame-img").src = `/api/render/lidar_bev?sample_token=${encodeURIComponent(st)}${bust}`;
-      $("frame-label").textContent = "LiDAR 点云 BEV（服务端渲染）";
-    } else if (!detail.data_channels.includes(ch)) {
-      $("frame-img").removeAttribute("src");
-      $("frame-label").textContent = `当前样本无通道 ${ch}`;
-    } else {
-      const m = await api(`/api/samples/${st}/media?channel=${encodeURIComponent(ch)}`);
-      $("frame-img").src = m.media_url;
-      $("frame-label").textContent = `${ch} · 原始文件`;
-    }
-  }
-
+  applyVisuals(st);
+  await refreshSidePanel(st);
   await loadAnnSummary(st);
 }
 
 async function loadClip() {
   stopPlay();
   const scene = currentSceneToken();
-  let ch = state.channel;
-  if (String(ch).startsWith("2d:")) ch = ch.slice(3);
-  if (ch === "3d:bev" || ch === "loc:ego") ch = "CAM_FRONT";
-  if (ch === "LIDAR_TOP") ch = "CAM_FRONT";
   const step = $("clip-step").value;
   const maxf = $("clip-max").value;
   const data = await api(
-    `/api/clips/frames?scene_token=${encodeURIComponent(scene)}&channel=${encodeURIComponent(ch)}&step=${step}&max_frames=${maxf}`,
+    `/api/clips/frames?scene_token=${encodeURIComponent(scene)}&channel=${encodeURIComponent("CAM_FRONT")}&step=${step}&max_frames=${maxf}`,
   );
   state.frames = data.frames;
   state.frameIdx = 0;
   $("btn-play").disabled = state.frames.length === 0;
   $("btn-stop").disabled = true;
-  showFrame(0);
+  if (state.frames.length) {
+    try {
+      state.cachedDetail = await api(`/api/samples/${state.frames[0].sample_token}`);
+    } catch {
+      /* keep previous cachedDetail */
+    }
+  }
+  if (state.frames.length) {
+    showFrame(0);
+  }
 }
 
 function showFrame(i) {
   if (!state.frames.length) return;
   state.frameIdx = ((i % state.frames.length) + state.frames.length) % state.frames.length;
   const f = state.frames[state.frameIdx];
-  $("frame-img").src = f.media_url;
-  $("frame-label").textContent = `${f.filename} (#${state.frameIdx + 1}/${state.frames.length})`;
-}
-
-function stopPlay() {
-  if (state.playTimer) clearInterval(state.playTimer);
-  state.playTimer = null;
-  $("btn-stop").disabled = true;
+  applyVisuals(f.sample_token);
+  void refreshSidePanel(f.sample_token);
+  const bar = $("playback-bar");
+  bar.classList.remove("hidden");
+  bar.textContent = `播放中 · 第 ${state.frameIdx + 1}/${state.frames.length} 帧 · ${f.filename}`;
 }
 
 function startPlay() {
   if (!state.frames.length) return;
   stopPlay();
   $("btn-stop").disabled = false;
-  state.playTimer = setInterval(() => showFrame(state.frameIdx + 1), 380);
+  state.playTimer = setInterval(() => showFrame(state.frameIdx + 1), 420);
 }
 
 function initEvents() {
-  document.querySelectorAll(".nav-l1 .l1").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.l1 = btn.dataset.l1;
-      if (state.l1 === "raw" && String(state.channel).startsWith("2d:")) {
-        state.channel = state.meta?.camera_channels?.[0] || "CAM_FRONT";
-        document.querySelectorAll(".nav-l2 .l2").forEach((x) => x.classList.remove("active"));
-        document.querySelector(`#nav-l2-raw .l2[data-channel="${state.channel}"]`)?.classList.add("active");
-      }
-      if (state.l1 === "label" && !String(state.channel).startsWith("2d:") && state.channel !== "3d:bev" && state.channel !== "loc:ego") {
-        state.channel = `2d:${state.meta?.camera_channels?.[0] || "CAM_FRONT"}`;
-        document.querySelectorAll(".nav-l2 .l2").forEach((x) => x.classList.remove("active"));
-        document.querySelector(`#nav-l2-label .l2[data-channel="${state.channel}"]`)?.classList.add("active");
-      }
-      syncL1UI();
-      $("fig-cam2d-wrap").classList.toggle("hidden", !String(state.channel).startsWith("2d:"));
-      refreshSampleView();
-    });
-  });
   $("btn-search").addEventListener("click", () => runSearch(1));
   $("page-prev").addEventListener("click", () => {
     if (state.searchPage > 1) runSearch(state.searchPage - 1);
@@ -284,12 +367,16 @@ function initEvents() {
   $("btn-load-clip").addEventListener("click", () => loadClip());
   $("btn-play").addEventListener("click", () => startPlay());
   $("btn-stop").addEventListener("click", () => stopPlay());
+  $("scene-select").addEventListener("change", () => {
+    void fetchEgoTrail();
+  });
 }
 
 async function boot() {
   initEvents();
+  wireGtAndLidarChecks();
   await loadMetaAndScenes();
-  syncL1UI();
+  await fetchEgoTrail();
   await runSearch(1);
   const first = $("results-body").querySelector("tr");
   if (first?.dataset.sample) await selectSample(first.dataset.sample, first);

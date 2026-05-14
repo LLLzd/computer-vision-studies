@@ -135,6 +135,25 @@ def list_scenes(nusc: NuScenes = Depends(get_nusc)):
     ]
 
 
+@app.get("/api/scenes/{scene_token}/ego_trail")
+def ego_trail(scene_token: str, request: Request):
+    """World-frame ego trajectory (x,y from ego_pose at each keyframe) for map-style plot."""
+    nusc: NuScenes = request.app.state.nusc
+    try:
+        nusc.get("scene", scene_token)
+    except KeyError:
+        raise HTTPException(404, "Unknown scene") from None
+    chain = request.app.state.scene_samples.get(scene_token, [])
+    points: list[dict] = []
+    for st in chain:
+        s = nusc.get("sample", st)
+        lid = nusc.get("sample_data", s["data"]["LIDAR_TOP"])
+        ego = nusc.get("ego_pose", lid["ego_pose_token"])
+        t = ego["translation"]
+        points.append({"sample_token": st, "x": float(t[0]), "y": float(t[1])})
+    return {"scene_token": scene_token, "points": points}
+
+
 @app.get("/api/scenes/{scene_token}/samples")
 def scene_samples(
     scene_token: str,
@@ -196,6 +215,25 @@ def sample_media_url(
         raise HTTPException(400, f"Channel {channel!r} not in sample")
     sd_token = s["data"][channel]
     return {"sample_data_token": sd_token, "media_url": f"/api/media/sample_data/{sd_token}"}
+
+
+@app.get("/api/samples/{sample_token}/raw_image/{channel}")
+def sample_raw_image_file(
+    sample_token: str,
+    channel: str,
+    nusc: NuScenes = Depends(get_nusc),
+):
+    """Direct image bytes for <img src> without a prior JSON round-trip."""
+    try:
+        s = nusc.get("sample", sample_token)
+    except KeyError:
+        raise HTTPException(404, "Unknown sample") from None
+    if channel not in s["data"]:
+        raise HTTPException(404, f"Channel {channel!r} not in sample")
+    sd = nusc.get("sample_data", s["data"][channel])
+    path = resolve_under_dataroot(Path(nusc.dataroot), sd["filename"])
+    mime, _ = mimetypes.guess_type(str(path))
+    return FileResponse(path, media_type=mime or "image/jpeg")
 
 
 @app.get("/api/samples/{sample_token}/annotations")
@@ -341,15 +379,16 @@ def search_samples(
 @app.get("/api/render/lidar_bev")
 def render_lidar(
     sample_token: str,
+    boxes: bool = Query(False, description="Overlay 3D annotation boxes in ego BEV"),
     nusc: NuScenes = Depends(get_nusc),
     cache: RenderLRU = Depends(get_render_cache),
 ):
-    key = f"lidar:{sample_token}"
+    key = f"lidar:{sample_token}:b{int(boxes)}"
     hit = cache.get(key)
     if hit:
         return Response(content=hit, media_type="image/png")
     try:
-        png = render_lidar_bev_png(nusc, sample_token)
+        png = render_lidar_bev_png(nusc, sample_token, draw_boxes=boxes)
     except Exception as e:
         raise HTTPException(500, str(e)) from e
     cache.set(key, png)
@@ -360,15 +399,16 @@ def render_lidar(
 def render_cam2d(
     sample_token: str,
     channel: str = Query(...),
+    boxes: bool = Query(True, description="Draw projected 3D boxes; false returns raw camera"),
     nusc: NuScenes = Depends(get_nusc),
     cache: RenderLRU = Depends(get_render_cache),
 ):
-    key = f"cam2d:{sample_token}:{channel}"
+    key = f"cam2d:{sample_token}:{channel}:b{int(boxes)}"
     hit = cache.get(key)
     if hit:
         return Response(content=hit, media_type="image/png")
     try:
-        png = render_camera_with_boxes_png(nusc, sample_token, channel)
+        png = render_camera_with_boxes_png(nusc, sample_token, channel, draw_boxes=boxes)
     except Exception as e:
         raise HTTPException(500, str(e)) from e
     cache.set(key, png)
