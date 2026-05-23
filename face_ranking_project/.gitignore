@@ -1,0 +1,3 @@
+# 人脸图片（本地抓取或手动放入，不入库）
+static/faces/*
+!static/faces/.gitkeep

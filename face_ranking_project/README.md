@@ -37,6 +37,21 @@ pip install -r requirements.txt
 
 将 `.jpg` / `.png` 等图片放入 `static/faces/` 目录，**至少需要 2 张**。
 
+也可以使用内置抓取脚本自动下载真人照片（默认从 Wikimedia Commons 获取）：
+
+```bash
+python fetch_real_faces.py --limit 50
+```
+
+常用参数：
+
+- `--limit 50`：最多下载 50 张
+- `--query "portrait photograph person"`：自定义搜索词
+- `--min-width 256 --min-height 256`：限制最低分辨率
+- `--output-dir static/faces`：指定输出目录
+
+> 建议仅抓取和使用公开授权图片，并遵守目标站点服务条款与当地法律法规。
+
 ### 3. 启动服务
 
 ```bash
