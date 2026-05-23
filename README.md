@@ -4,6 +4,46 @@
 
 这是一个计算机视觉学习项目集合，包含多个不同类型的计算机视觉任务实现，从基础的图像分类到更复杂的图像分割和超分辨率。所有项目都设计为适合在 M1 Mac 上运行，代码结构清晰，易于理解和扩展。
 
+## 🗂️ 当前目录总览（已同步）
+
+以下为 `study/` 目录下当前可见子项目（按方向分组）：
+
+### 基础视觉任务
+
+- [MNIST 手写数字识别](mnist_project/)：CNN 分类入门（训练/测试/推理/可视化）
+- [CIFAR-10 图像分类](cifar10_project/)：10 类彩色图像分类
+- [MNIST 图像分割](mnist_segmentation_project/)：U-Net 像素级分割
+- [Oxford-IIIT Pet 图像分割](oxford_pet_project/)：宠物前景分割
+- [Pascal VOC 2012 图像分割](pascal_vco2012_project/)：21 类语义分割
+- [VOC2012 Anchor-Free 检测](vco2012_od2d/)：热力图式 2D 目标检测
+
+### 生成与增强
+
+- [DIV2K 超分辨率](sr_div2k/)：ESPCN/EDSR 超分辨率实验
+- [Fast Style Transfer](fast-style-transfer/)：风格迁移训练与推理
+
+### 多模态与大模型
+
+- [Qwen-VL 多模态模型](qwenvl_project/)：图像/视频理解与问答
+- [人脸偏好打分排序工具](face_ranking_project/)：本地离线 Elo 偏好排序
+
+### 自动驾驶与 BEV
+
+- [NuScenes 可视化 Demo](demo_by_nuscenes/)：环视 + BEV 可视化与统计
+- [NuScenes 本地网页平台](nuscenes_web_platform/)：FastAPI + 前端交互浏览
+- [BEV Box 插值评测](bev_box_interp_eval/)：关键帧补帧算法评测与可视化
+- [Occupancy Grid 学习实验](occupancy/)：贝叶斯 OGM 与神经网络建图示例
+- [里程计轨迹优化](odom/)：关键帧锚点约束下轨迹平滑
+
+### 3D 重建 / 3DGS
+
+- [3D Gaussian Splatting 学习版](3dgs/)：3DGS 流程拆解与训练渲染
+- [gsplat M1 重建流程](gsplat_m1_recon/)：Apple Silicon 友好的一体化重建管线
+
+### 图像处理基础实验
+
+- [EDT 距离变换实验](edt/)：边缘提取 + 欧几里得距离变换
+
 ## 📋 项目列表
 
 ### 1. [MNIST 手写数字识别](mnist_project/)
@@ -62,6 +102,59 @@
   - ESPCN: [Shi, W., Caballero, J., Huszár, F., Totz, J., Aitken, A. P., Bishop, R., ... & Wang, Z. (2016). Real-time single image and video super-resolution using an efficient sub-pixel convolutional neural network. In Proceedings of the IEEE conference on computer vision and pattern recognition (pp. 1874-1883).](https://arxiv.org/abs/1609.05158)
   - EDSR: [Lim, B., Son, S., Kim, H., Nah, S., & Lee, K. M. (2017). Enhanced deep residual networks for single image super-resolution. In Proceedings of the IEEE conference on computer vision and pattern recognition workshops (pp. 136-144).](https://arxiv.org/abs/1707.02921)
 - **项目介绍**: 实现了 ESPCN 和 EDSR 两种超分辨率模型，使用 DIV2K 数据集进行训练和评估。支持 2x、3x、4x 超分倍数，可通过配置文件轻松切换模型和超分倍数。
+
+### 8. [人脸偏好打分排序](face_ranking_project/)
+- **任务**: 人脸图片偏好排序
+- **核心方法**: Elo 评分 + 成对比较
+- **功能**: Web 界面对比、结果导出 CSV、评分重置
+- **项目介绍**: 本地离线运行，图片不上传网络，适合快速做审美偏好排序实验。
+
+### 9. [NuScenes 可视化 Demo](demo_by_nuscenes/)
+- **任务**: 自动驾驶多传感器数据可视化
+- **数据集**: NuScenes（建议先用 `v1.0-mini`）
+- **功能**: 环视相机展示、BEV 标注展示、GIF/视频导出
+
+### 10. [NuScenes 本地网页平台](nuscenes_web_platform/)
+- **任务**: NuScenes 数据浏览平台
+- **技术栈**: FastAPI + 原生前端
+- **功能**: 场景检索、逐帧查看、相机图层叠加、LiDAR BEV 渲染
+
+### 11. [BEV Box 插值评测](bev_box_interp_eval/)
+- **任务**: 关键帧到中间帧的 2D Box 递推评测
+- **方法**: Linear / Poly / Kalman / Spline
+- **功能**: 指标评测、可视化视频、对比图与评测报告输出
+
+### 12. [3D Gaussian Splatting 学习版](3dgs/)
+- **任务**: 3DGS 场景重建与渲染学习
+- **功能**: 视频抽帧、初始化、训练、渲染、效果对比
+
+### 13. [gsplat M1 重建流程](gsplat_m1_recon/)
+- **任务**: 面向 Apple Silicon 的 3D 小场景重建
+- **功能**: 一键流水线、COLMAP 位姿估计、MPS 训练与模型导出
+
+### 14. [Fast Style Transfer](fast-style-transfer/)
+- **任务**: 图像风格迁移
+- **功能**: 预训练模型推理、自定义风格训练、结果可视化
+
+### 15. [EDT 距离变换实验](edt/)
+- **任务**: 边缘到距离场的图像处理实验
+- **方法**: Canny/Sobel/Laplacian + EDT（BFS/两遍法）
+- **功能**: 单图/批处理、结果可视化、距离场导出
+
+### 16. [Occupancy Grid 学习实验](occupancy/)
+- **任务**: 占用栅格估计与建图
+- **方法**: 贝叶斯 OGM + 简化神经网络估计
+- **功能**: 概率栅格更新、传感器模拟、可视化演示
+
+### 17. [里程计轨迹优化实验](odom/)
+- **任务**: 轨迹平滑与漂移校正
+- **方法**: 关键帧锚点约束 + 全局平滑优化
+- **功能**: 误差统计、优化趋势图、过程动画
+
+### 18. [VOC2012 Anchor-Free 2D 检测](vco2012_od2d/)
+- **任务**: Pascal VOC 多类别目标检测
+- **方法**: Heatmap + Offset + WH（Anchor-Free）
+- **功能**: 训练、评测（mAP/PR）、推理与可视化
 
 ## 🚀 快速开始
 
@@ -128,9 +221,20 @@ pip install scikit-image huggingface_hub
 - **[CIFAR-10 图像分类](cifar10_project/)**：多类别分类任务，使用批归一化提高模型性能
 - **[MNIST 图像分割](mnist_segmentation_project/)**：基础分割任务，将分类转换为分割
 - **[Oxford-IIIT Pet 图像分割](oxford_pet_project/)**：宠物图像分割，使用 U-Net 模型
-- **[Pascal VOC 2012 图像分割](pascal_vco2012_project/)**：语义分割任务，像素级分类
+- **[Pascal VOC 2012 图像分割](pascal_vco2012_project/)**：21 类语义分割训练与推理
 - **[Qwen-VL 多模态模型](qwenvl_project/)**：多模态任务，支持图像分析和文本交互
 - **[DIV2K 超分辨率](sr_div2k/)**：超分辨率任务，实现 ESPCN 和 EDSR 模型
+- **[人脸偏好打分排序](face_ranking_project/)**：基于 Elo 的本地离线偏好排序工具
+- **[NuScenes 可视化 Demo](demo_by_nuscenes/)**：自动驾驶数据集静态可视化与导出
+- **[NuScenes 本地网页平台](nuscenes_web_platform/)**：NuScenes 浏览、检索和渲染平台
+- **[BEV Box 插值评测](bev_box_interp_eval/)**：关键帧补帧算法评测与可视化
+- **[Occupancy Grid 学习实验](occupancy/)**：贝叶斯 OGM 与学习式占用估计
+- **[里程计轨迹优化实验](odom/)**：关键帧锚点约束下的轨迹平滑
+- **[3DGS 学习版](3dgs/)**：3D Gaussian Splatting 基础流程实现
+- **[gsplat M1 重建流程](gsplat_m1_recon/)**：Apple Silicon 友好的 3DGS 小场景重建
+- **[Fast Style Transfer](fast-style-transfer/)**：风格迁移训练与推理
+- **[EDT 距离变换实验](edt/)**：边缘提取与欧几里得距离变换
+- **[VOC2012 Anchor-Free 2D 检测](vco2012_od2d/)**：Anchor-Free 目标检测训练评测
 
 ## 🔧 技术栈
 
@@ -160,17 +264,28 @@ pip install scikit-image huggingface_hub
 - **硬件要求**: 建议使用 GPU 加速训练，特别是对于较大的模型
 - **模型下载**: Qwen-VL 模型较大，需要稳定的网络连接
 
-## 🧩 其他子项目（补充）
+## 🧾 一级子项目全量清单
 
-除上方主线学习项目外，`study/` 下还包含以下实践工程（均有独立 README）：
+`study/` 当前一级子项目目录（共 18 个）：
 
-- `face_ranking_project/`：本地离线人脸偏好打分与 Elo 排序工具
-- `demo_by_nuscenes/`：NuScenes 可视化与数据分析脚本集合
-- `nuscenes_web_platform/`：NuScenes 本地网页浏览与渲染平台（FastAPI）
-- `bev_box_interp_eval/`：BEV 2D Box 关键帧递推补帧评测工程
-- `3dgs/`：3D Gaussian Splatting 学习版实现
-- `gsplat_m1_recon/`：Apple Silicon 友好的 3DGS 小场景重建流程
-- `fast-style-transfer/`：快速风格迁移（推理 + 训练）
+- `3dgs/`
+- `bev_box_interp_eval/`
+- `cifar10_project/`
+- `demo_by_nuscenes/`
+- `edt/`
+- `face_ranking_project/`
+- `fast-style-transfer/`
+- `gsplat_m1_recon/`
+- `mnist_project/`
+- `mnist_segmentation_project/`
+- `nuscenes_web_platform/`
+- `occupancy/`
+- `odom/`
+- `oxford_pet_project/`
+- `pascal_vco2012_project/`
+- `qwenvl_project/`
+- `sr_div2k/`
+- `vco2012_od2d/`
 
 ## 🤝 贡献
 
