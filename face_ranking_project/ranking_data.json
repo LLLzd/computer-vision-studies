@@ -1,0 +1,556 @@
+{
+  "ratings": {
+    "face_d.png": 1425.115113607091,
+    "face_c.png": 1710.2410739255852,
+    "face_a.png": 1321.6988161784773,
+    "face_b.png": 1542.9449962888466
+  },
+  "comparison_counts": {
+    "face_d.png": 27,
+    "face_c.png": 25,
+    "face_a.png": 24,
+    "face_b.png": 24
+  },
+  "comparisons": [
+    {
+      "round": 1,
+      "winner": "face_a.png",
+      "loser": "face_d.png",
+      "choice": "left",
+      "winner_rating": 1516.0,
+      "loser_rating": 1484.0,
+      "timestamp": "2026-05-23T10:52:55.472827+00:00"
+    },
+    {
+      "round": 2,
+      "winner": "face_b.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1516.74,
+      "loser_rating": 1499.26,
+      "timestamp": "2026-05-23T11:05:51.882696+00:00"
+    },
+    {
+      "round": 3,
+      "winner": "face_c.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1515.26,
+      "loser_rating": 1468.74,
+      "timestamp": "2026-05-23T11:05:54.160899+00:00"
+    },
+    {
+      "round": 4,
+      "winner": "face_c.png",
+      "loser": "face_b.png",
+      "choice": "left",
+      "winner_rating": 1531.33,
+      "loser_rating": 1500.67,
+      "timestamp": "2026-05-23T11:05:55.199354+00:00"
+    },
+    {
+      "round": 5,
+      "winner": "face_b.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1515.2,
+      "loser_rating": 1454.2,
+      "timestamp": "2026-05-23T11:05:55.602987+00:00"
+    },
+    {
+      "round": 6,
+      "winner": "face_a.png",
+      "loser": "face_c.png",
+      "choice": "left",
+      "winner_rating": 1516.74,
+      "loser_rating": 1513.86,
+      "timestamp": "2026-05-23T11:05:55.956739+00:00"
+    },
+    {
+      "round": 7,
+      "winner": "face_a.png",
+      "loser": "face_b.png",
+      "choice": "left",
+      "winner_rating": 1532.67,
+      "loser_rating": 1499.27,
+      "timestamp": "2026-05-23T11:05:56.588089+00:00"
+    },
+    {
+      "round": 8,
+      "winner": "face_c.png",
+      "loser": "face_b.png",
+      "choice": "left",
+      "winner_rating": 1529.19,
+      "loser_rating": 1483.94,
+      "timestamp": "2026-05-23T11:05:56.865571+00:00"
+    },
+    {
+      "round": 9,
+      "winner": "face_b.png",
+      "loser": "face_d.png",
+      "choice": "left",
+      "winner_rating": 1498.58,
+      "loser_rating": 1439.57,
+      "timestamp": "2026-05-23T11:05:57.136046+00:00"
+    },
+    {
+      "round": 10,
+      "winner": "face_c.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1545.35,
+      "loser_rating": 1516.51,
+      "timestamp": "2026-05-23T11:05:57.907286+00:00"
+    },
+    {
+      "round": 11,
+      "winner": "face_d.png",
+      "loser": "face_c.png",
+      "choice": "right",
+      "winner_rating": 1460.3,
+      "loser_rating": 1524.62,
+      "timestamp": "2026-05-23T11:05:58.121885+00:00"
+    },
+    {
+      "round": 12,
+      "winner": "face_a.png",
+      "loser": "face_d.png",
+      "choice": "left",
+      "winner_rating": 1529.94,
+      "loser_rating": 1446.86,
+      "timestamp": "2026-05-23T11:05:58.813108+00:00"
+    },
+    {
+      "round": 13,
+      "winner": "face_c.png",
+      "loser": "face_a.png",
+      "choice": "left",
+      "winner_rating": 1540.87,
+      "loser_rating": 1513.69,
+      "timestamp": "2026-05-23T11:05:59.422303+00:00"
+    },
+    {
+      "round": 14,
+      "winner": "face_b.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1512.21,
+      "loser_rating": 1433.23,
+      "timestamp": "2026-05-23T11:06:00.203773+00:00"
+    },
+    {
+      "round": 15,
+      "winner": "face_c.png",
+      "loser": "face_d.png",
+      "choice": "left",
+      "winner_rating": 1552.06,
+      "loser_rating": 1422.03,
+      "timestamp": "2026-05-23T11:06:00.937822+00:00"
+    },
+    {
+      "round": 16,
+      "winner": "face_a.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1525.57,
+      "loser_rating": 1410.16,
+      "timestamp": "2026-05-23T11:06:04.324664+00:00"
+    },
+    {
+      "round": 17,
+      "winner": "face_b.png",
+      "loser": "face_a.png",
+      "choice": "left",
+      "winner_rating": 1528.83,
+      "loser_rating": 1508.95,
+      "timestamp": "2026-05-23T11:06:05.381832+00:00"
+    },
+    {
+      "round": 18,
+      "winner": "face_d.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1430.59,
+      "loser_rating": 1488.52,
+      "timestamp": "2026-05-23T11:06:06.028381+00:00"
+    },
+    {
+      "round": 19,
+      "winner": "face_c.png",
+      "loser": "face_b.png",
+      "choice": "left",
+      "winner_rating": 1566.99,
+      "loser_rating": 1513.9,
+      "timestamp": "2026-05-23T11:06:06.689721+00:00"
+    },
+    {
+      "round": 20,
+      "winner": "face_b.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1526.13,
+      "loser_rating": 1418.35,
+      "timestamp": "2026-05-23T11:06:07.525133+00:00"
+    },
+    {
+      "round": 21,
+      "winner": "face_c.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1579.44,
+      "loser_rating": 1476.08,
+      "timestamp": "2026-05-23T11:06:08.027042+00:00"
+    },
+    {
+      "round": 22,
+      "winner": "face_b.png",
+      "loser": "face_d.png",
+      "choice": "left",
+      "winner_rating": 1537.32,
+      "loser_rating": 1407.16,
+      "timestamp": "2026-05-23T11:06:08.632009+00:00"
+    },
+    {
+      "round": 23,
+      "winner": "face_b.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1550.53,
+      "loser_rating": 1462.87,
+      "timestamp": "2026-05-23T11:06:09.372503+00:00"
+    },
+    {
+      "round": 24,
+      "winner": "face_d.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1425.71,
+      "loser_rating": 1444.32,
+      "timestamp": "2026-05-23T11:06:10.074764+00:00"
+    },
+    {
+      "round": 25,
+      "winner": "face_c.png",
+      "loser": "face_b.png",
+      "choice": "left",
+      "winner_rating": 1594.11,
+      "loser_rating": 1535.86,
+      "timestamp": "2026-05-23T11:06:10.625987+00:00"
+    },
+    {
+      "round": 26,
+      "winner": "face_c.png",
+      "loser": "face_d.png",
+      "choice": "left",
+      "winner_rating": 1602.91,
+      "loser_rating": 1416.91,
+      "timestamp": "2026-05-23T11:06:11.543496+00:00"
+    },
+    {
+      "round": 27,
+      "winner": "face_c.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1611.08,
+      "loser_rating": 1408.74,
+      "timestamp": "2026-05-23T11:06:12.221010+00:00"
+    },
+    {
+      "round": 28,
+      "winner": "face_c.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1618.69,
+      "loser_rating": 1401.13,
+      "timestamp": "2026-05-23T11:06:12.735244+00:00"
+    },
+    {
+      "round": 29,
+      "winner": "face_b.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1547.74,
+      "loser_rating": 1432.44,
+      "timestamp": "2026-05-23T11:06:13.467505+00:00"
+    },
+    {
+      "round": 30,
+      "winner": "face_b.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1558.62,
+      "loser_rating": 1421.57,
+      "timestamp": "2026-05-23T11:06:14.043142+00:00"
+    },
+    {
+      "round": 31,
+      "winner": "face_d.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1418.07,
+      "loser_rating": 1404.63,
+      "timestamp": "2026-05-23T11:06:14.668194+00:00"
+    },
+    {
+      "round": 32,
+      "winner": "face_c.png",
+      "loser": "face_a.png",
+      "choice": "left",
+      "winner_rating": 1625.92,
+      "loser_rating": 1397.4,
+      "timestamp": "2026-05-23T11:06:15.194512+00:00"
+    },
+    {
+      "round": 33,
+      "winner": "face_b.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1568.47,
+      "loser_rating": 1408.21,
+      "timestamp": "2026-05-23T11:06:15.740801+00:00"
+    },
+    {
+      "round": 34,
+      "winner": "face_c.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1632.69,
+      "loser_rating": 1390.63,
+      "timestamp": "2026-05-23T11:06:16.331694+00:00"
+    },
+    {
+      "round": 35,
+      "winner": "face_c.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1639.58,
+      "loser_rating": 1401.31,
+      "timestamp": "2026-05-23T11:06:17.111894+00:00"
+    },
+    {
+      "round": 36,
+      "winner": "face_c.png",
+      "loser": "face_b.png",
+      "choice": "right",
+      "winner_rating": 1652.35,
+      "loser_rating": 1555.7,
+      "timestamp": "2026-05-23T11:06:18.295534+00:00"
+    },
+    {
+      "round": 37,
+      "winner": "face_c.png",
+      "loser": "face_d.png",
+      "choice": "left",
+      "winner_rating": 1658.46,
+      "loser_rating": 1395.21,
+      "timestamp": "2026-05-23T11:06:18.920633+00:00"
+    },
+    {
+      "round": 38,
+      "winner": "face_b.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1564.8,
+      "loser_rating": 1386.12,
+      "timestamp": "2026-05-23T11:06:19.496553+00:00"
+    },
+    {
+      "round": 39,
+      "winner": "face_c.png",
+      "loser": "face_b.png",
+      "choice": "left",
+      "winner_rating": 1670.24,
+      "loser_rating": 1553.01,
+      "timestamp": "2026-05-23T11:06:20.564993+00:00"
+    },
+    {
+      "round": 40,
+      "winner": "face_d.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1402.32,
+      "loser_rating": 1374.42,
+      "timestamp": "2026-05-23T11:06:21.296458+00:00"
+    },
+    {
+      "round": 41,
+      "winner": "face_b.png",
+      "loser": "face_a.png",
+      "choice": "left",
+      "winner_rating": 1561.44,
+      "loser_rating": 1365.99,
+      "timestamp": "2026-05-23T11:06:21.989302+00:00"
+    },
+    {
+      "round": 42,
+      "winner": "face_d.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1416.66,
+      "loser_rating": 1351.66,
+      "timestamp": "2026-05-23T11:06:25.297730+00:00"
+    },
+    {
+      "round": 43,
+      "winner": "face_c.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1674.65,
+      "loser_rating": 1347.25,
+      "timestamp": "2026-05-23T11:06:25.855138+00:00"
+    },
+    {
+      "round": 44,
+      "winner": "face_c.png",
+      "loser": "face_d.png",
+      "choice": "left",
+      "winner_rating": 1680.56,
+      "loser_rating": 1410.75,
+      "timestamp": "2026-05-23T11:06:26.364463+00:00"
+    },
+    {
+      "round": 45,
+      "winner": "face_d.png",
+      "loser": "face_a.png",
+      "choice": "left",
+      "winner_rating": 1423.86,
+      "loser_rating": 1334.14,
+      "timestamp": "2026-05-23T11:06:27.520521+00:00"
+    },
+    {
+      "round": 46,
+      "winner": "face_c.png",
+      "loser": "face_b.png",
+      "choice": "left",
+      "winner_rating": 1691.28,
+      "loser_rating": 1550.72,
+      "timestamp": "2026-05-23T11:06:28.433563+00:00"
+    },
+    {
+      "round": 47,
+      "winner": "face_c.png",
+      "loser": "face_b.png",
+      "choice": "left",
+      "winner_rating": 1701.14,
+      "loser_rating": 1540.86,
+      "timestamp": "2026-05-23T11:06:29.267470+00:00"
+    },
+    {
+      "round": 48,
+      "winner": "face_c.png",
+      "loser": "face_b.png",
+      "choice": "left",
+      "winner_rating": 1710.24,
+      "loser_rating": 1531.76,
+      "timestamp": "2026-05-23T11:06:29.823403+00:00"
+    },
+    {
+      "round": 49,
+      "winner": "face_b.png",
+      "loser": "face_d.png",
+      "choice": "right",
+      "winner_rating": 1542.94,
+      "loser_rating": 1412.67,
+      "timestamp": "2026-05-23T11:06:30.488397+00:00"
+    },
+    {
+      "round": 50,
+      "winner": "face_d.png",
+      "loser": "face_a.png",
+      "choice": "right",
+      "winner_rating": 1425.12,
+      "loser_rating": 1321.7,
+      "timestamp": "2026-05-23T11:06:31.260436+00:00"
+    }
+  ],
+  "pair_history": [
+    [
+      "face_a.png",
+      "face_d.png"
+    ],
+    [
+      "face_a.png",
+      "face_c.png"
+    ],
+    [
+      "face_b.png",
+      "face_d.png"
+    ],
+    [
+      "face_a.png",
+      "face_c.png"
+    ],
+    [
+      "face_c.png",
+      "face_d.png"
+    ],
+    [
+      "face_b.png",
+      "face_c.png"
+    ],
+    [
+      "face_c.png",
+      "face_d.png"
+    ],
+    [
+      "face_b.png",
+      "face_d.png"
+    ],
+    [
+      "face_b.png",
+      "face_c.png"
+    ],
+    [
+      "face_a.png",
+      "face_d.png"
+    ],
+    [
+      "face_a.png",
+      "face_b.png"
+    ],
+    [
+      "face_a.png",
+      "face_d.png"
+    ],
+    [
+      "face_a.png",
+      "face_c.png"
+    ],
+    [
+      "face_c.png",
+      "face_d.png"
+    ],
+    [
+      "face_a.png",
+      "face_d.png"
+    ],
+    [
+      "face_b.png",
+      "face_c.png"
+    ],
+    [
+      "face_b.png",
+      "face_c.png"
+    ],
+    [
+      "face_b.png",
+      "face_c.png"
+    ],
+    [
+      "face_b.png",
+      "face_d.png"
+    ],
+    [
+      "face_a.png",
+      "face_d.png"
+    ]
+  ],
+  "current_round": 50,
+  "finished": true,
+  "known_faces": [
+    "face_a.png",
+    "face_b.png",
+    "face_c.png",
+    "face_d.png"
+  ]
+}

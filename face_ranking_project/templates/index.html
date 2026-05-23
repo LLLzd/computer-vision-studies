@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>人脸偏好对比</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <h1>人脸偏好打分</h1>
+    <p class="subtitle">左右对比，选择你更喜欢的一张</p>
+  </header>
+
+  <main class="container">
+  <section class="status-bar" id="statusBar">
+    <span>轮次: <strong id="currentRound">0</strong> / <strong id="maxRound">0</strong></span>
+    <span>剩余: <strong id="remaining">0</strong></span>
+    <span>图片数: <strong id="totalFaces">0</strong></span>
+  </section>
+
+  <section class="compare-panel" id="comparePanel">
+    <div class="face-card" id="leftCard">
+      <img id="leftImage" src="" alt="左侧人脸" class="face-image">
+      <p class="face-name" id="leftName"></p>
+      <button type="button" class="btn btn-primary btn-like" id="btnLikeLeft">喜欢左侧</button>
+    </div>
+    <div class="vs-divider">VS</div>
+    <div class="face-card" id="rightCard">
+      <img id="rightImage" src="" alt="右侧人脸" class="face-image">
+      <p class="face-name" id="rightName"></p>
+      <button type="button" class="btn btn-primary btn-like" id="btnLikeRight">喜欢右侧</button>
+    </div>
+  </section>
+
+  <section class="message-box" id="messageBox" hidden></section>
+
+  <section class="action-bar">
+    <button type="button" class="btn btn-secondary" id="btnStop">结束对比</button>
+    <a href="/results" class="btn btn-outline">查看排名结果</a>
+  </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>所有数据本地存储，不会上传到网络</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/compare.js') }}"></script>
+</body>
+</html>

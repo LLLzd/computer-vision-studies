@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>排名结果</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <h1>排名结果</h1>
+    <p class="subtitle">基于 Elo 算法的全局排名与 0–10 分归一化得分</p>
+  </header>
+
+  <main class="container">
+    <section class="status-bar" id="resultsStatus">
+      <span>总对比次数: <strong id="totalComparisons">0</strong></span>
+      <span>图片数: <strong id="totalFaces">0</strong></span>
+      <span>状态: <strong id="sessionStatus">进行中</strong></span>
+    </section>
+
+    <section class="action-bar">
+      <a href="/" class="btn btn-outline">返回对比</a>
+      <button type="button" class="btn btn-secondary" id="btnExport">导出 CSV</button>
+      <button type="button" class="btn btn-danger" id="btnReset">重置所有数据</button>
+    </section>
+
+    <section class="message-box" id="messageBox" hidden></section>
+
+    <section class="results-table-wrap">
+      <table class="results-table" id="resultsTable">
+        <thead>
+          <tr>
+            <th>排名</th>
+            <th>缩略图</th>
+            <th>文件名</th>
+            <th>得分 (0–10)</th>
+            <th>Elo 分数</th>
+            <th>对比次数</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody">
+          <tr><td colspan="6" class="empty-row">加载中…</td></tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>所有数据本地存储，不会上传到网络</p>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/results.js') }}"></script>
+</body>
+</html>
