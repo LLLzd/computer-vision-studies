@@ -136,3 +136,22 @@ pip install torch torchvision Pillow numpy matplotlib tqdm pyyaml
 
 - [PyTorch官方示例：Fast Neural Style](https://github.com/pytorch/examples/tree/master/fast_neural_style)
 - [Perceptual Losses for Real-Time Style Transfer and Super-Resolution](https://arxiv.org/abs/1603.08155)
+
+## 命令速查
+
+```bash
+# 使用预训练模型做迁移
+python main.py transfer --content images/content/cat.jpg --model models/candy.pth --output outputs/cat_styled.jpg
+
+# 训练自己的风格模型
+python main.py train --style images/style/starry_night.jpg
+
+# 可视化数据与结果
+python main.py visualize
+```
+
+## 常见问题
+
+- `models/*.pth` 不存在：先下载预训练权重并放到 `models/`
+- 输出图颜色异常：检查输入图是否为 RGB，必要时先转成 `.jpg/.png` 标准格式
+- 速度慢：优先使用 `mps`（Apple Silicon）或减小 `TRANSFER_SIZE`

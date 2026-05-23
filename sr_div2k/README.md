@@ -142,3 +142,23 @@ python inference.py --input image.png --output custom_output/
 ## 📧 联系方式
 
 如有问题，请提交 Issue 或 Pull Request。
+
+## ✅ 目录与命令说明补充
+
+- 当前仓库目录名为 `sr_div2k/`（README 中示例树写作 `sr_DIV2K_ESPCN/`，仅命名写法差异）
+- 在本项目目录中直接执行命令即可，无需额外修改脚本路径
+
+## 🔁 推荐标准流程
+
+```bash
+python download_div2k.py
+python train_espcn.py
+python evaluate.py
+python inference.py --input path/to/image.png
+```
+
+## 🧪 结果解读
+
+- `evaluation_metrics.txt`：查看 PSNR / SSIM 等核心指标
+- `evaluation_results.png`：直观看超分图像质量变化
+- 若推理结果偏糊，可优先增加 `EPOCHS` 或尝试更高质量训练数据

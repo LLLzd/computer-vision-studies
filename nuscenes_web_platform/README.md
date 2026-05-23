@@ -72,3 +72,10 @@ chmod +x scripts/run.sh
 - 后端：[backend/main.py](backend/main.py)（FastAPI）、[backend/visuals.py](backend/visuals.py)（Matplotlib / Pillow 渲染）
 - 前端静态页：[static/index.html](static/index.html)、[static/app.js](static/app.js)、[static/styles.css](static/styles.css)
 - 大图 / 渲染结果使用进程内 LRU 缓存，缓存键包含 `boxes` 等查询参数
+
+## 快速排错
+
+- 页面空白或接口失败：先访问 `GET /api/health` 检查服务状态
+- 场景列表为空：确认 `.env` 中 `NUSCENES_DATAROOT` 与 `NUSCENES_VERSION` 正确
+- 渲染慢：减少最大帧数、提高步长、仅勾选必要图层
+- 图片不显示：检查浏览器控制台和后端日志，确认样本 token 与 channel 合法

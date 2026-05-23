@@ -363,3 +363,25 @@ cat output/eval_report.md
 
 ### 雷达图
 ![Radar Chart](output/vis/radar_chart.png)
+
+## 十四、快速运行与验证清单
+
+### 1) 最小运行
+
+```bash
+cd /Users/rik/workspace/study/bev_box_interp_eval
+python run_pipeline.py
+```
+
+### 2) 结果核对
+
+- `output/eval_metric/eval_results.json` 已生成
+- `output/vis/metrics_comparison.png` 已生成
+- `output/vis/bev_interp_video.mp4` 可播放
+- `output/eval_report.md` 可正常阅读
+
+### 3) 常见问题
+
+- 指标异常偏低：先检查 key frame 与 full GT 的 `track_id` 是否对齐
+- 某方法无结果：确认对应方法已在配置中开启且输入字段完整
+- 可视化空白：检查坐标单位是否统一为米、BEV 框角点顺序是否一致

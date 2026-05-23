@@ -98,3 +98,20 @@ Linear(84, 10)
 ## 预期结果
 
 训练 10 个 epoch 后，测试集准确率约为 70-75%。
+
+## 环境要求
+
+- Python 3.9+
+- PyTorch 与 torchvision
+- numpy、matplotlib
+
+## 训练与验证建议
+
+- 首次训练可先跑 2~3 个 epoch 验证流程是否正常
+- 若在 Apple Silicon 上运行，可在 `config.py` 中优先使用 `mps`
+- 若准确率偏低，可先尝试：延长 epoch、降低学习率、加入更强数据增强
+
+## 输出目录说明
+
+- `models/`：保存训练好的模型参数
+- `outputs/`：保存推理结果、可视化图片等

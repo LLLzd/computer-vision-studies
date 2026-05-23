@@ -305,3 +305,18 @@ python src/export_model.py \
 - 重拍视频，增加纹理和光照均匀性。
 - 减少运动模糊，速度更慢一点拍摄。
 - 尝试 `--camera_model OPENCV`（在 `run_colmap.py` 参数中传入）。
+
+### Q4: 训练能跑通但细节发糊
+
+- 提升输入帧质量（更稳、更清晰、曝光更均匀）。
+- 适当提高 `data.max_frames`（如 220 -> 260）并保持低模糊帧。
+- 在可接受时长内提高 `standard` 模式迭代或减小 `frame_stride`。
+
+## 快速验收清单
+
+完成一次标准流程后，可按以下检查：
+
+- `output/checkpoints/` 下有最新 `step_*.pt`
+- `output/previews/eval_final/same_view/` 存在 5 列对比图
+- `output/previews/trajectory_compare_full.mp4` 可播放且左右同步
+- `output/export/gaussians_model.npz` 与 `gaussians_points.ply` 均已导出

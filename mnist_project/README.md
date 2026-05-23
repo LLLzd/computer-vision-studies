@@ -53,3 +53,24 @@ python visual.py
 - **网络结构**：Conv -> BatchNorm -> ReLU -> Pool -> FC
 - **损失函数**：交叉熵损失
 - **优化器**：Adam 优化器
+
+## 环境要求
+
+- Python 3.9+
+- PyTorch（CPU / MPS / CUDA 任一可用）
+- torchvision、matplotlib、numpy
+
+## 一键跑通（推荐顺序）
+
+```bash
+python train.py
+python test.py
+python infer.py
+python visual.py
+```
+
+## 输出位置
+
+- 模型权重：`models/`
+- 推理结果与可视化：`outputs/`
+- 数据集缓存：`data/`

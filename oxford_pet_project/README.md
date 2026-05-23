@@ -78,3 +78,30 @@ python visual.py
 ## 预期结果
 
 训练后，模型应该能够准确分割出宠物的轮廓，IoU 指标在测试集上达到 80% 以上。
+
+## 环境要求
+
+- Python 3.9+
+- PyTorch / torchvision
+- Pillow、numpy、matplotlib
+
+## 推荐运行顺序
+
+```bash
+python download.py
+python train.py
+python test.py
+python infer.py
+python visual.py
+```
+
+## 输出目录说明
+
+- `models/`：训练权重与检查点
+- `outputs/`：预测图、对比图、可视化结果
+
+## 常见问题
+
+- 下载失败：检查网络后重试 `python download.py`
+- 显存/内存不足：降低 batch size 或输入分辨率
+- 预测边界粗糙：延长训练轮次并尝试更强数据增强

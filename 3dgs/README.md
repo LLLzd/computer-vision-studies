@@ -225,3 +225,22 @@ A: 增加训练迭代次数（`--iterations 500`），使用 `train_3dgs.py`
 
 **Q: 渲染结果不理想？**
 A: 检查帧数量和质量，调整相机参数，增加训练时间
+
+## 环境要求补充
+
+- Python 3.9+
+- numpy、opencv-python、matplotlib、torch、scipy、tqdm
+- 推荐在虚拟环境中安装依赖，避免与其他项目冲突
+
+## 推荐执行路径（新手）
+
+1. 先运行 `main.py extract` 确认视频抽帧正常  
+2. 再运行 `main.py initialize` 检查初始化输出  
+3. 训练优先选 `train_simple.py` 快速验证流程  
+4. 渲染阶段先用 `render_simple.py --mode compare` 对比效果
+
+## 输出检查清单
+
+- 是否生成 `output/gaussians_init.pkl`
+- 是否生成 `output/gaussians_trained.pkl`
+- 是否有 `output/loss_curve.png` 且损失呈下降趋势

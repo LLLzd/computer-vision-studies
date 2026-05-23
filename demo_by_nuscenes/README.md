@@ -158,3 +158,23 @@ demo_by_nuscenes/
 
 - [NuScenes Dataset](https://www.nuscenes.org/)
 - [NuScenes DevKit](https://github.com/nutonomy/nuscenes-devkit)
+
+## ✅ 最小可运行流程
+
+```bash
+pip install -r requirements.txt
+python visualize_nuscenes.py
+python generate_gif.py
+```
+
+运行后可先检查：
+
+- `output/combined_*.png`
+- `output/scene0_surround.gif`
+- `output/scene0_bev.gif`
+
+## 🛠️ 常见问题
+
+- 找不到数据：确认 `data/nuscenes/v1.0-mini` 存在并包含 metadata json
+- 图像路径报错：检查 `samples/`、`sweeps/` 目录是否完整
+- 生成速度慢：优先在 mini 数据集上验证，再切换更大版本

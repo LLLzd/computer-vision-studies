@@ -79,3 +79,23 @@ mnist_segmentation_project/
 - 准确分割 MNIST 手写数字
 - 生成清晰的分割掩码
 - 在测试集上获得较高的 IoU 分数
+
+## 环境要求
+
+- Python 3.9+
+- PyTorch / torchvision
+- numpy、matplotlib
+
+## 推荐执行顺序
+
+```bash
+python train.py
+python test.py
+python infer.py
+```
+
+## 输出与排错
+
+- 训练权重默认保存到 `models/unet_mnist.pth`
+- 推理可视化默认保存到 `outputs/infer_result.png`
+- 若 IoU 很低，优先检查：训练轮数、学习率、以及输入与标签尺寸是否一致

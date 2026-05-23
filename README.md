@@ -160,6 +160,18 @@ pip install scikit-image huggingface_hub
 - **硬件要求**: 建议使用 GPU 加速训练，特别是对于较大的模型
 - **模型下载**: Qwen-VL 模型较大，需要稳定的网络连接
 
+## 🧩 其他子项目（补充）
+
+除上方主线学习项目外，`study/` 下还包含以下实践工程（均有独立 README）：
+
+- `face_ranking_project/`：本地离线人脸偏好打分与 Elo 排序工具
+- `demo_by_nuscenes/`：NuScenes 可视化与数据分析脚本集合
+- `nuscenes_web_platform/`：NuScenes 本地网页浏览与渲染平台（FastAPI）
+- `bev_box_interp_eval/`：BEV 2D Box 关键帧递推补帧评测工程
+- `3dgs/`：3D Gaussian Splatting 学习版实现
+- `gsplat_m1_recon/`：Apple Silicon 友好的 3DGS 小场景重建流程
+- `fast-style-transfer/`：快速风格迁移（推理 + 训练）
+
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request 来改进这些项目！
