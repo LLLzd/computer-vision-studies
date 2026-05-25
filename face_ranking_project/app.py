@@ -145,15 +145,8 @@ def api_pair():
             }
         )
 
-    if engine.finished:
-        return jsonify(
-            {
-                "ok": False,
-                "error": "对比已结束，请查看结果页",
-                "finished": True,
-                "status": status,
-            }
-        )
+    engine.ensure_comparison_active()
+    status = engine.get_status()
 
     pair = engine.select_next_pair()
     if pair is None:
@@ -179,6 +172,7 @@ def api_pair():
 @app.route("/api/vote", methods=["POST"])
 def api_vote():
     refresh_faces()
+    engine.ensure_comparison_active()
     body = request.get_json(silent=True) or {}
 
     left_id = str(body.get("left_id", "")).strip()
@@ -194,12 +188,6 @@ def api_vote():
 
     result["status"] = engine.get_status()
     return jsonify(result)
-
-
-@app.route("/api/stop", methods=["POST"])
-def api_stop():
-    engine.stop_early()
-    return jsonify({"ok": True, "status": engine.get_status()})
 
 
 @app.route("/api/reset", methods=["POST"])

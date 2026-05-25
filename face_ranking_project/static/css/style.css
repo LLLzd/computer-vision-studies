@@ -116,9 +116,11 @@ body {
   width: 100%;
   max-width: 320px;
   aspect-ratio: 1;
-  object-fit: cover;
+  /* 不裁剪：完整显示，不足部分用背景色 padding 成正方形 */
+  object-fit: contain;
+  object-position: center;
   border-radius: calc(var(--radius) - 4px);
-  background: #0a0e14;
+  background: var(--surface);
   border: 1px solid var(--border);
 }
 
@@ -287,10 +289,11 @@ body {
 .results-table .thumb {
   width: 56px;
   height: 56px;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: #0a0e14;
+  background: var(--surface);
 }
 
 .score-badge {

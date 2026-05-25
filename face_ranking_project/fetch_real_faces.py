@@ -1,8 +1,10 @@
 """
-从 Wikimedia Commons 抓取真人照片到 static/faces。
+从百度图片搜索抓取照片到 static/faces（速度优先）。
 
-用法示例：
-python fetch_real_faces.py --limit 50
+默认关键词：女学生
+示例页：https://image.baidu.com/search/index?tn=baiduimage&word=%E5%A5%B3%E5%AD%A6%E7%94%9F
+
+仅保留：百度 acjson 接口 + 高并发下载 + 单行进度条。
 """
 
 from __future__ import annotations
@@ -10,129 +12,65 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import time
+import re
 import urllib.error
 import urllib.parse
 import urllib.request
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 
 import config
 
-WIKIMEDIA_API = "https://commons.wikimedia.org/w/api.php"
-DEFAULT_QUERY = (
-    'portrait photograph person "human face" -illustration -drawing '
-    "-painting -anime -cartoon"
+BAIDU_ACJSON = "https://image.baidu.com/search/acjson"
+DEFAULT_WORD = "女学生"
+DEFAULT_REFERER = (
+    "https://image.baidu.com/search/index?tn=baiduimage&fm=result&ie=utf-8&word="
+    + urllib.parse.quote(DEFAULT_WORD)
 )
-USER_AGENT = "face-ranking-project/1.0 (local research tool)"
-CHUNK_SIZE = 1024 * 64
 
-MIME_TO_EXT = {
-    "image/jpeg": ".jpg",
-    "image/png": ".png",
-    "image/webp": ".webp",
-    "image/gif": ".gif",
-    "image/bmp": ".bmp",
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/122.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json, text/javascript, */*; q=0.01",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "Connection": "keep-alive",
 }
+
+CHUNK_SIZE = 1024 * 64
+MIN_FILE_BYTES = 4 * 1024
+MAX_FILE_BYTES = 15 * 1024 * 1024
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="抓取真人照片到 static/faces")
-    parser.add_argument("--limit", type=int, default=50, help="最大下载数量，默认 50")
+    parser = argparse.ArgumentParser(description="从百度图片抓取照片到 static/faces")
+    parser.add_argument("--limit", type=int, default=200, help="目标成功数量，默认 200")
     parser.add_argument(
-        "--query",
-        type=str,
-        default=DEFAULT_QUERY,
-        help="Wikimedia 搜索词，默认偏向真人肖像",
+        "--source",
+        choices=("baidu", "randomuser", "wikimedia", "auto"),
+        default="baidu",
+        help="兼容旧参数；randomuser/wikimedia/auto 已弃用，均使用百度图片",
     )
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        default=config.FACES_DIR,
-        help="下载目录，默认 static/faces",
-    )
-    parser.add_argument(
-        "--min-width",
-        type=int,
-        default=256,
-        help="最小宽度，默认 256",
-    )
-    parser.add_argument(
-        "--min-height",
-        type=int,
-        default=256,
-        help="最小高度，默认 256",
-    )
-    parser.add_argument(
-        "--sleep",
-        type=float,
-        default=0.2,
-        help="每次下载间隔秒数，默认 0.2，避免请求过快",
-    )
-    parser.add_argument(
-        "--timeout",
-        type=float,
-        default=20.0,
-        help="网络请求超时秒数，默认 20",
-    )
+    parser.add_argument("--word", type=str, default=DEFAULT_WORD, help="搜索关键词，默认 女学生")
+    parser.add_argument("--output-dir", type=Path, default=config.FACES_DIR)
+    parser.add_argument("--workers", type=int, default=48, help="并发下载线程数，默认 48")
+    parser.add_argument("--rn", type=int, default=60, help="每页抓取条数，默认 60")
+    parser.add_argument("--max-pages", type=int, default=30, help="最多翻页数，默认 30")
+    parser.add_argument("--timeout", type=float, default=8.0, help="单次请求超时秒数")
     return parser.parse_args()
 
 
-def _http_get_json(url: str, timeout: float) -> dict:
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read().decode("utf-8"))
-
-
-def _download_file(url: str, target: Path, timeout: float) -> None:
-    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(req, timeout=timeout) as resp, target.open("wb") as f:
-        while True:
-            chunk = resp.read(CHUNK_SIZE)
-            if not chunk:
-                break
-            f.write(chunk)
-
-
-def _build_search_url(query: str, offset: int, batch_size: int = 50) -> str:
-    params = {
-        "action": "query",
-        "format": "json",
-        "generator": "search",
-        "gsrsearch": query,
-        "gsrnamespace": "6",  # File namespace
-        "gsrlimit": str(batch_size),
-        "gsroffset": str(offset),
-        "prop": "imageinfo",
-        "iiprop": "url|mime|size",
-    }
-    return f"{WIKIMEDIA_API}?{urllib.parse.urlencode(params)}"
-
-
-def _iter_image_candidates(query: str, timeout: float):
-    offset = 0
-    while True:
-        data = _http_get_json(_build_search_url(query, offset), timeout=timeout)
-        pages = (data.get("query") or {}).get("pages") or {}
-        if not pages:
-            break
-
-        for page in pages.values():
-            image_infos = page.get("imageinfo") or []
-            if not image_infos:
-                continue
-            info = image_infos[0]
-            yield {
-                "title": page.get("title", ""),
-                "url": info.get("url", ""),
-                "mime": info.get("mime", ""),
-                "width": int(info.get("width", 0) or 0),
-                "height": int(info.get("height", 0) or 0),
-            }
-
-        next_offset = (((data.get("continue") or {}).get("gsroffset")))
-        if next_offset is None:
-            break
-        offset = int(next_offset)
+def _render_progress(done: int, total: int, failed: int, skipped: int, width: int = 28) -> None:
+    ratio = min(1.0, max(0.0, done / max(1, total)))
+    filled = int(width * ratio)
+    bar = "#" * filled + "-" * (width - filled)
+    print(
+        f"\r[{bar}] {done}/{total} (failed={failed}, skipped={skipped})",
+        end="",
+        flush=True,
+    )
 
 
 def _next_file_index(output_dir: Path) -> int:
@@ -141,91 +79,187 @@ def _next_file_index(output_dir: Path) -> int:
         if not file.is_file():
             continue
         stem = file.stem
-        if not stem.startswith("wm_face_"):
+        if not stem.startswith("bd_face_"):
             continue
-        suffix = stem.removeprefix("wm_face_")
+        suffix = stem.removeprefix("bd_face_")
         if suffix.isdigit():
             max_index = max(max_index, int(suffix))
     return max_index + 1
 
 
-def _is_allowed_candidate(item: dict, min_width: int, min_height: int) -> bool:
-    if item["mime"] not in MIME_TO_EXT:
+def _referer_for_word(word: str) -> str:
+    return (
+        "https://image.baidu.com/search/index?tn=baiduimage&fm=result&ie=utf-8&word="
+        + urllib.parse.quote(word)
+    )
+
+
+def _parse_baidu_json(raw: str) -> dict:
+    text = raw.strip()
+    if text.startswith("{"):
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            pass
+    # 百度偶发非法转义，做一次宽松清理
+    text = re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f]", "", text)
+    text = text.replace("\\'", "'")
+    return json.loads(text)
+
+
+def _build_list_url(word: str, pn: int, rn: int) -> str:
+    params = {
+        "tn": "resultjson_com",
+        "ipn": "rj",
+        "ct": "201326592",
+        "fp": "result",
+        "queryWord": word,
+        "word": word,
+        "cl": "2",
+        "lm": "-1",
+        "ie": "utf-8",
+        "oe": "utf-8",
+        "st": "-1",
+        "ic": "0",
+        "pn": str(pn),
+        "rn": str(rn),
+        "gsm": hex(pn)[2:],
+    }
+    return BAIDU_ACJSON + "?" + urllib.parse.urlencode(params)
+
+
+def _pick_image_url(item: dict) -> str:
+    # 缩略图更小，下载更快
+    for key in ("thumbURL", "middleURL", "hoverURL", "objURL"):
+        url = (item.get(key) or "").strip()
+        if url.startswith("http://") or url.startswith("https://"):
+            return url.replace("\\/", "/")
+    return ""
+
+
+def _fetch_baidu_page(word: str, pn: int, rn: int, timeout: float) -> list[str]:
+    url = _build_list_url(word, pn, rn)
+    headers = dict(HEADERS)
+    headers["Referer"] = _referer_for_word(word)
+    req = urllib.request.Request(url, headers=headers)
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        payload = _parse_baidu_json(resp.read().decode("utf-8", errors="ignore"))
+
+    urls: list[str] = []
+    for item in payload.get("data", []):
+        if not isinstance(item, dict):
+            continue
+        img = _pick_image_url(item)
+        if img:
+            urls.append(img)
+    return urls
+
+
+def _iter_baidu_urls(word: str, rn: int, max_pages: int, timeout: float):
+    for page in range(max_pages):
+        pn = page * rn
+        try:
+            urls = _fetch_baidu_page(word, pn, rn, timeout)
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, OSError):
+            continue
+        if not urls:
+            break
+        for u in urls:
+            yield u
+
+
+def _download_file(url: str, target: Path, referer: str, timeout: float) -> bool:
+    headers = dict(HEADERS)
+    headers["Referer"] = referer
+    headers["Accept"] = "image/avif,image/webp,image/apng,image/*,*/*;q=0.8"
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp, target.open("wb") as f:
+            total = 0
+            while True:
+                chunk = resp.read(CHUNK_SIZE)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if total > MAX_FILE_BYTES:
+                    raise ValueError("too large")
+                f.write(chunk)
+        if target.stat().st_size < MIN_FILE_BYTES:
+            target.unlink(missing_ok=True)
+            return False
+        return True
+    except (urllib.error.URLError, TimeoutError, OSError, ValueError):
+        if target.exists():
+            target.unlink(missing_ok=True)
         return False
-    if not item["url"]:
-        return False
-    if item["width"] < min_width or item["height"] < min_height:
-        return False
-    return True
 
 
 def main() -> None:
     args = parse_args()
     if args.limit <= 0:
         raise ValueError("--limit 必须 > 0")
-    if args.min_width <= 0 or args.min_height <= 0:
-        raise ValueError("--min-width / --min-height 必须 > 0")
+    if args.workers <= 0:
+        raise ValueError("--workers 必须 > 0")
+    if args.source != "baidu":
+        print(
+            f"[提示] --source {args.source} 已弃用，现统一使用百度图片（--word 指定关键词）"
+        )
 
     output_dir: Path = args.output_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-
-    print("=" * 60)
-    print("Wikimedia 真人照片抓取器")
-    print(f"保存目录: {output_dir}")
-    print(f"目标数量: {args.limit}")
-    print(f"搜索词: {args.query}")
-    print("=" * 60)
+    referer = _referer_for_word(args.word)
 
     downloaded = 0
-    skipped = 0
     failed = 0
+    skipped = 0
     index = _next_file_index(output_dir)
-    seen_url_hash: set[str] = set()
+    seen: set[str] = set()
 
-    for item in _iter_image_candidates(args.query, timeout=args.timeout):
-        if downloaded >= args.limit:
-            break
+    _render_progress(0, args.limit, failed=0, skipped=0)
 
-        url = item["url"]
-        url_hash = hashlib.sha1(url.encode("utf-8")).hexdigest()
-        if url_hash in seen_url_hash:
-            skipped += 1
-            continue
-        seen_url_hash.add(url_hash)
+    url_iter = _iter_baidu_urls(args.word, args.rn, args.max_pages, args.timeout)
+    pending: dict = {}
 
-        if not _is_allowed_candidate(item, args.min_width, args.min_height):
-            skipped += 1
-            continue
+    with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        while downloaded < args.limit:
+            # 维持下载队列，避免空转
+            while len(pending) < args.workers * 2 and downloaded + len(pending) < args.limit:
+                try:
+                    url = next(url_iter)
+                except StopIteration:
+                    break
 
-        ext = MIME_TO_EXT[item["mime"]]
-        filename = f"wm_face_{index:04d}{ext}"
-        target = output_dir / filename
-        index += 1
+                key = hashlib.sha1(url.encode("utf-8")).hexdigest()
+                if key in seen:
+                    skipped += 1
+                    continue
+                seen.add(key)
 
-        try:
-            _download_file(url, target, timeout=args.timeout)
-            print(
-                f"[OK] {filename} <- {item['title']} "
-                f"({item['width']}x{item['height']})"
-            )
-            downloaded += 1
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
-            failed += 1
-            if target.exists():
-                target.unlink(missing_ok=True)
-            print(f"[失败] 下载失败 {filename}: {exc}")
+                target = output_dir / f"bd_face_{index:04d}.jpg"
+                index += 1
+                fut = pool.submit(_download_file, url, target, referer, args.timeout)
+                pending[fut] = target
 
-        if args.sleep > 0:
-            time.sleep(args.sleep)
+            if not pending:
+                break
 
-    print("=" * 60)
-    print(f"完成，下载成功: {downloaded} 张")
-    print(f"跳过: {skipped}，失败: {failed}")
-    print(f"图片目录: {output_dir}")
-    print("=" * 60)
+            done_set, pending_set = wait(pending.keys(), return_when=FIRST_COMPLETED)
+            for fut in done_set:
+                pending.pop(fut, None)
+                ok = fut.result()
+                if ok:
+                    downloaded += 1
+                else:
+                    failed += 1
+                _render_progress(downloaded, args.limit, failed=failed, skipped=skipped)
+                if downloaded >= args.limit:
+                    break
 
-    if downloaded == 0:
-        print("[提示] 未下载到图片，可尝试更换 --query 或降低尺寸限制")
+            pending = {f: t for f, t in pending.items() if f in pending_set}
+
+    print()
+    print(f"完成: 成功 {downloaded}，失败 {failed}，跳过 {skipped}，关键词「{args.word}」")
+    print(f"目录: {output_dir}")
 
 
 if __name__ == "__main__":

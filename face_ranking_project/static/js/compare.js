@@ -16,7 +16,6 @@
     rightName: document.getElementById("rightName"),
     btnLikeLeft: document.getElementById("btnLikeLeft"),
     btnLikeRight: document.getElementById("btnLikeRight"),
-    btnStop: document.getElementById("btnStop"),
     comparePanel: document.getElementById("comparePanel"),
     messageBox: document.getElementById("messageBox"),
   };
@@ -40,8 +39,13 @@
   function updateStatus(status) {
     if (!status) return;
     els.currentRound.textContent = status.current_round;
-    els.maxRound.textContent = status.max_iterations;
-    els.remaining.textContent = status.remaining;
+    if (status.unlimited_iterations) {
+      els.maxRound.textContent = "∞";
+      els.remaining.textContent = "∞";
+    } else {
+      els.maxRound.textContent = status.max_iterations;
+      els.remaining.textContent = status.remaining;
+    }
     els.totalFaces.textContent = status.total_faces;
   }
 
@@ -74,10 +78,7 @@
       updateStatus(data.status);
 
       if (!data.ok) {
-        showMessage(data.error || "无法加载对比组", data.finished ? "success" : "warning");
-        if (data.finished) {
-          els.btnStop.disabled = true;
-        }
+        showMessage(data.error || "无法加载对比组", "warning");
         return;
       }
 
@@ -123,38 +124,12 @@
         return;
       }
 
-      if (data.finished) {
-        showMessage("对比已完成！请查看排名结果。", "success");
-        els.btnStop.disabled = true;
-        voting = false;
-        return;
-      }
-
       await fetchPair();
     } catch (err) {
       showMessage("提交失败: " + err.message, "error");
       setButtonsEnabled(true);
     } finally {
       voting = false;
-    }
-  }
-
-  async function stopSession() {
-    if (!confirm("确定要结束对比吗？可前往结果页查看当前排名。")) {
-      return;
-    }
-
-    els.btnStop.disabled = true;
-    setButtonsEnabled(false);
-
-    try {
-      const resp = await fetch("/api/stop", { method: "POST" });
-      const data = await resp.json();
-      updateStatus(data.status);
-      showMessage("对比已手动结束，请查看排名结果。", "success");
-    } catch (err) {
-      showMessage("操作失败: " + err.message, "error");
-      els.btnStop.disabled = false;
     }
   }
 
@@ -166,9 +141,6 @@
     submitVote("right");
   });
 
-  els.btnStop.addEventListener("click", stopSession);
-
-  // 键盘快捷键：← 选左，→ 选右
   document.addEventListener("keydown", function (e) {
     if (voting || els.btnLikeLeft.disabled) return;
     if (e.key === "ArrowLeft") submitVote("left");

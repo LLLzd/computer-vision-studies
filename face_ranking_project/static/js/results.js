@@ -31,7 +31,7 @@
   function renderTable(rankings) {
     if (!rankings || rankings.length === 0) {
       els.resultsBody.innerHTML =
-        '<tr><td colspan="6" class="empty-row">暂无数据，请先将图片放入 static/faces 并完成对比</td></tr>';
+        '<tr><td colspan="8" class="empty-row">暂无数据，请先将图片放入 static/faces 并完成对比</td></tr>';
       return;
     }
 
@@ -56,7 +56,13 @@
           item.score.toFixed(1) +
           "</span></td>" +
           "<td>" +
-          item.elo.toFixed(2) +
+          item.effective_score.toFixed(4) +
+          "</td>" +
+          "<td>" +
+          item.mu.toFixed(4) +
+          "</td>" +
+          "<td>" +
+          item.sigma.toFixed(4) +
           "</td>" +
           "<td>" +
           item.comparisons +
@@ -81,11 +87,16 @@
       els.totalFaces.textContent = data.status.total_faces;
 
       const status = data.status;
-      if (status.finished) {
-        els.sessionStatus.textContent = "已结束";
-      } else if (status.current_round > 0) {
-        els.sessionStatus.textContent =
-          "进行中 (" + status.current_round + "/" + status.max_iterations + ")";
+      if (status.current_round > 0) {
+        if (status.unlimited_iterations) {
+          els.sessionStatus.textContent = "进行中 (" + status.current_round + "/∞)";
+        } else {
+          els.sessionStatus.textContent =
+            "进行中 (" + status.current_round + "/" + status.max_iterations + ")";
+        }
+        if (status.converged) {
+          els.sessionStatus.textContent += " · 已收敛";
+        }
       } else {
         els.sessionStatus.textContent = "未开始";
       }
