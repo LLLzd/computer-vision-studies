@@ -1,0 +1,15 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Common training/runtime artifacts
+data/*
+!data/.gitkeep
+logs/*
+!logs/.gitkeep
+output/*
+!output/.gitkeep
+outputs/*
+!outputs/.gitkeep
+model/*.pt
+models/*.pt
