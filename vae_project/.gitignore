@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pt
+data/
+outputs/
+
+# Common training/runtime artifacts
+data/*
+!data/.gitkeep
+logs/*
+!logs/.gitkeep
+output/*
+!output/.gitkeep
+outputs/*
+!outputs/.gitkeep
+model/*.pt
+models/*.pt

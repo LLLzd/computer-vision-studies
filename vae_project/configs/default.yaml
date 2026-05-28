@@ -1,0 +1,78 @@
+# ==============================
+# 项目级配置
+# ==============================
+project:
+  # 项目名称（用于标识实验）。
+  name: vae_project
+  # 全局随机种子，控制可复现性。
+  seed: 42
+  # 输出目录（checkpoint、日志、可视化均放这里）。
+  output_dir: outputs
+  # 数据根目录（MNIST/FashionMNIST/CelebA 下载或读取路径）。
+  data_dir: data
+
+# ==============================
+# 数据集配置
+# ==============================
+dataset:
+  # 数据集名称：mnist / fashion_mnist / celeba
+  name: mnist
+  # 输入图像尺寸（MNIST 默认 28）。
+  image_size: 28
+  # DataLoader 工作线程数。
+  num_workers: 2
+  # 验证集划分比例（MNIST/FashionMNIST 使用）。
+  val_split: 0.1
+
+# ==============================
+# 模型结构配置
+# ==============================
+model:
+  # 输入通道数：灰度图为 1，RGB 图为 3。
+  in_channels: 1
+  # 潜变量维度（z 的长度）。
+  latent_dim: 16
+  # 编码器通道配置（解码器会自动镜像反转）。
+  hidden_dims: [32, 64, 128, 256]
+
+# ==============================
+# 通用训练超参数
+# ==============================
+train:
+  # 学习率。
+  lr: 0.001
+  # KL 项权重（beta-VAE 参数）。
+  beta: 1.0
+  # 优化器名称（当前代码实现为 Adam）。
+  optimizer: adam
+
+# ==============================
+# 快速训练模式（用于快速验证）
+# ==============================
+quick:
+  # quick 模式训练轮数。
+  epochs: 10
+  # quick 模式 batch size。
+  batch_size: 128
+  # 日志打印间隔（当前实现按 iter 打印，此字段保留扩展）。
+  log_interval: 1
+
+# ==============================
+# 标准训练模式（用于正式实验）
+# ==============================
+standard:
+  # standard 模式训练轮数。
+  epochs: 50
+  # standard 模式 batch size。
+  batch_size: 64
+  # 日志打印间隔（当前实现按 iter 打印，此字段保留扩展）。
+  log_interval: 1
+  # 是否每个 epoch 保存 checkpoint。
+  save_every_epoch: true
+
+# ==============================
+# 设备配置
+# ==============================
+device:
+  # auto 表示自动选择：cuda > mps > cpu。
+  type: auto
