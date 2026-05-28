@@ -21,6 +21,8 @@
 
 - [DIV2K 超分辨率](sr_div2k/)：ESPCN/EDSR 超分辨率实验
 - [Fast Style Transfer](fast-style-transfer/)：风格迁移训练与推理
+- [VAE 变分自编码器](vae_project/)：MNIST 重构/生成/隐空间可视化，双模式训练
+- [Flow Matching 生成模型](flow_matching_project/)：流匹配生成模型教学（详细注释）
 
 ### 多模态与大模型
 
@@ -155,6 +157,14 @@
 - **任务**: Pascal VOC 多类别目标检测
 - **方法**: Heatmap + Offset + WH（Anchor-Free）
 - **功能**: 训练、评测（mAP/PR）、推理与可视化
+
+### 19. [VAE 变分自编码器](vae_project/)
+- **任务**: 生成建模与图像重构
+- **模型**: Variational Autoencoder (VAE)
+- **数据集**: MNIST（可切换 FashionMNIST/CelebA）
+- **功能**: 快速/标准训练、ELBO 训练、重构可视化、随机生成、2D 隐空间 t-SNE
+- **论文参考**: [Kingma, D. P., & Welling, M. (2014). Auto-Encoding Variational Bayes.](https://arxiv.org/abs/1312.6114)
+- **项目介绍**: 提供标准科研工程化实现，支持配置化训练、checkpoint 管理、日志记录与可视化结果导出，便于课程学习和实验复现。
 
 ## 🚀 快速开始
 

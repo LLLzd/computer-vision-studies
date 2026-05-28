@@ -1,6 +1,6 @@
-# 人脸图片（本地抓取或手动放入，不入库）
-static/faces/*
-!static/faces/.gitkeep
+# Python cache
+__pycache__/
+*.pyc
 
 # Common training/runtime artifacts
 data/*
@@ -13,3 +13,4 @@ outputs/*
 !outputs/.gitkeep
 model/*.pt
 models/*.pt
+models/*.pth

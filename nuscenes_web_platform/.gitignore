@@ -5,3 +5,15 @@ __pycache__/
 venv/
 *.egg-info/
 .pytest_cache/
+
+# Common training/runtime artifacts
+data/*
+!data/.gitkeep
+logs/*
+!logs/.gitkeep
+output/*
+!output/.gitkeep
+outputs/*
+!outputs/.gitkeep
+model/*.pt
+models/*.pt

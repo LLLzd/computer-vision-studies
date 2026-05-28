@@ -29,7 +29,9 @@ __pycache__/
 
 # 模型文件（匹配所有层级）
 **/models/__pycache__/
-**/models/
+# 注意：不要忽略整个 models 目录，里面通常是模型结构源码（.py）。
+# 仅忽略特定大模型目录或权重文件（见下方规则）。
+**/models/**/*.pth
 # 大型模型目录
 **/models/Qwen/
 
