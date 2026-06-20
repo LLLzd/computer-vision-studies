@@ -155,6 +155,11 @@ def generate_samples(model, num_samples, num_steps, device, method='euler'):
     # samples 形状：(num_samples, 784) -> (num_samples, 1, 28, 28)
     samples = samples.view(num_samples, 1, IMAGE_SIZE, IMAGE_SIZE)
     
+    # 反归一化：从 [-1, 1] 转换回 [0, 1]
+    # 训练时使用了 transforms.Normalize(mean=[0.5], std=[0.5])
+    # 推理时需要还原
+    samples = (samples * 0.5) + 0.5
+    
     # 裁剪到 [0, 1] 范围
     # 生成的样本可能超出图像值范围
     samples = torch.clamp(samples, 0, 1)

@@ -251,7 +251,7 @@ x(t + dt) = x(t) + dt/6 · (k1 + 2·k2 + 2·k3 + k4)
 展示学习到的向量场在不同时间点的形态：
 
 ```bash
-python visualize.py --model model.pt --type vector_field
+python visualize.py --model output/models/model_final.pt --type vector_field
 ```
 
 ### 2. 生成轨迹可视化
@@ -259,7 +259,7 @@ python visualize.py --model model.pt --type vector_field
 展示从噪声到生成样本的完整路径：
 
 ```bash
-python visualize.py --model model.pt --type trajectory
+python visualize.py --model output/models/model_final.pt --type trajectory
 ```
 
 ### 3. 不同步数对比
@@ -267,7 +267,7 @@ python visualize.py --model model.pt --type trajectory
 对比不同 ODE 步数对生成质量的影响：
 
 ```bash
-python visualize.py --model model.pt --type compare_steps
+python visualize.py --model output/models/model_final.pt --type compare_steps
 ```
 
 ### 4. 不同方法对比
@@ -275,7 +275,7 @@ python visualize.py --model model.pt --type compare_steps
 对比欧拉方法和 RK4 方法的生成结果：
 
 ```bash
-python visualize.py --model model.pt --type compare_methods
+python visualize.py --model output/models/model_final.pt --type compare_methods
 ```
 
 ### 5. 时间嵌入可视化
@@ -283,7 +283,7 @@ python visualize.py --model model.pt --type compare_methods
 展示时间嵌入的结构：
 
 ```bash
-python visualize.py --model model.pt --type time_embedding
+python visualize.py --model output/models/model_final.pt --type time_embedding
 ```
 
 ---

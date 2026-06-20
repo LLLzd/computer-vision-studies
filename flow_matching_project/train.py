@@ -26,6 +26,7 @@ Flow Matching 训练脚本
 
 import os  # 操作系统接口
 import time  # 时间相关功能
+import math  # 数学函数（用于学习率调度器）
 import torch  # PyTorch 深度学习框架
 import torch.nn as nn  # 神经网络模块
 from torch.utils.data import DataLoader  # 数据加载器
@@ -98,6 +99,11 @@ def get_dataloader(batch_size, device='cpu'):
         # 转换为 PyTorch 张量
         # 将 PIL 图像转换为张量，并归一化到 [0, 1]
         transforms.ToTensor(),
+        
+        # 标准化为均值 0、标准差 1
+        # 这非常重要！因为噪声 x_0 ~ N(0, 1)
+        # 数据需要与噪声分布匹配才能让 Flow Matching 正常工作
+        transforms.Normalize(mean=[0.5], std=[0.5]),
     ])
     
     # 下载并加载 MNIST 训练数据集
