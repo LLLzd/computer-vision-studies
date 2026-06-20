@@ -27,6 +27,7 @@
 ### 多模态与大模型
 
 - [Qwen-VL 多模态模型](qwenvl_project/)：图像/视频理解与问答
+- [第一视角视频 Embedding 向量库](ego_video_embedding_project/)：Qwen3-VL Embedding + FAISS 检索
 - [人脸偏好打分排序工具](face_ranking_project/)：本地离线 Elo 偏好排序
 
 ### 自动驾驶与 BEV
@@ -171,6 +172,11 @@
 ### 环境配置
 
 ```bash
+# （可选）创建并激活虚拟环境
+python -m venv .venv
+source .venv/bin/activate  # macOS/Linux
+# .venv\Scripts\activate  # Windows
+
 # 安装基础依赖
 pip install torch torchvision pillow numpy tqdm matplotlib
 

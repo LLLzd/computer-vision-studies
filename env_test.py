@@ -55,12 +55,35 @@ if __name__ == "__main__":
     # 检查PyTorch版本（如果已导入）
     try:
         import torch
-        print(f"PyTorch版本: {torch.__version__}")
-        print(f"CUDA可用: {torch.cuda.is_available()}")
-        if torch.cuda.is_available():
-            print(f"CUDA设备数: {torch.cuda.device_count()}")
-            print(f"当前CUDA设备: {torch.cuda.current_device()}")
-    except ImportError:
-        pass
+        import sys
+        
+        # 检查是否导入了正确的torch模块（不是本地文件）
+        torch_module_path = sys.modules['torch'].__file__
+        if 'site-packages' not in torch_module_path.lower():
+            print(f"警告: 导入的torch可能不是正确的包，路径: {torch_module_path}")
+        
+        # 安全获取版本信息
+        if hasattr(torch, '__version__'):
+            print(f"PyTorch版本: {torch.__version__}")
+        else:
+            print("PyTorch版本: 无法获取")
+        
+        # 安全检查CUDA
+        if hasattr(torch, 'cuda'):
+            print(f"CUDA可用: {torch.cuda.is_available()}")
+            if torch.cuda.is_available():
+                print(f"CUDA设备数: {torch.cuda.device_count()}")
+                print(f"当前CUDA设备: {torch.cuda.current_device()}")
+        else:
+            print("CUDA模块: 不可用")
+        
+        # 检查MPS（Apple Silicon）
+        if hasattr(torch.backends, 'mps'):
+            print(f"MPS可用: {torch.backends.mps.is_available()}")
+        
+    except ImportError as e:
+        print(f"PyTorch导入失败: {e}")
+    except Exception as e:
+        print(f"PyTorch检查异常: {e}")
     
     print("环境测试完成！")
