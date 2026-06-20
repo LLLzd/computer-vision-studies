@@ -1,0 +1,21 @@
+# 模型权重（体积大，不入库）
+models/Qwen3-VL-Embedding-2B/
+models/Qwen3-VL-Embedding-8B/
+
+# 输入视频与预处理产物
+inputs/*
+!inputs/.gitkeep
+outputs/*
+!outputs/.gitkeep
+data/*
+!data/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# 环境
+.env
+*.env
