@@ -7,6 +7,8 @@ data/*
 !data/.gitkeep
 logs/*
 !logs/.gitkeep
+inputs/*
+!inputs/.gitkeep
 output/*
 !output/.gitkeep
 outputs/*
