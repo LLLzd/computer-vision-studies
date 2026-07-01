@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GlassCapture — AI 眼镜数据采集 App 原型</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0b10;
+      --surface: #14161f;
+      --surface-2: #1c1f2b;
+      --border: rgba(255,255,255,0.08);
+      --text: #f0f2f8;
+      --text-muted: #8b92a8;
+      --accent: #6366f1;
+      --accent-2: #8b5cf6;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 16px;
+      --phone-w: 390px;
+      --phone-h: 844px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 16px 48px;
+      color: var(--text);
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 28px;
+      max-width: 600px;
+    }
+
+    .page-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(99,102,241,0.15);
+      color: #a5b4fc;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Phone frame */
+    .phone-wrap {
+      position: relative;
+    }
+
+    .phone {
+      width: var(--phone-w);
+      height: var(--phone-h);
+      background: var(--surface);
+      border-radius: 44px;
+      border: 3px solid #2a2d3a;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.05),
+        0 40px 80px rgba(0,0,0,0.5),
+        inset 0 1px 0 rgba(255,255,255,0.06);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 126px;
+      height: 34px;
+      background: #000;
+      border-radius: 0 0 20px 20px;
+      z-index: 10;
+    }
+
+    .status-bar {
+      height: 54px;
+      padding: 14px 28px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      z-index: 5;
+    }
+
+    .screen {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 20px 0;
+      display: none;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .screen.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .screen-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 4px;
+    }
+
+    .screen-sub {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 20px;
+    }
+
+    /* Components */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .status-pill.connected {
+      background: rgba(34,197,94,0.12);
+      color: var(--success);
+    }
+
+    .status-pill.disconnected {
+      background: rgba(239,68,68,0.12);
+      color: var(--danger);
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .preview-card {
+      background: linear-gradient(145deg, #1a1d28 0%, #0f1118 100%);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      aspect-ratio: 16/10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preview-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 30% 40%, rgba(99,102,241,0.12) 0%, transparent 50%),
+        radial-gradient(circle at 70% 60%, rgba(139,92,246,0.1) 0%, transparent 50%);
+    }
+
+    .preview-icon {
+      font-size: 2.5rem;
+      opacity: 0.5;
+      margin-bottom: 8px;
+    }
+
+    .preview-label {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    .timer {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      display: none;
+    }
+
+    .timer.recording {
+      display: block;
+      color: var(--danger);
+    }
+
+    .timer.recording::before {
+      content: '● ';
+    }
+
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 24px;
+      margin-top: 8px;
+    }
+
+    .waveform span {
+      width: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      animation: wave 0.8s ease-in-out infinite;
+    }
+
+    .waveform span:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .waveform span:nth-child(2) { height: 16px; animation-delay: 0.1s; }
+    .waveform span:nth-child(3) { height: 22px; animation-delay: 0.2s; }
+    .waveform span:nth-child(4) { height: 14px; animation-delay: 0.3s; }
+    .waveform span:nth-child(5) { height: 20px; animation-delay: 0.4s; }
+
+    @keyframes wave {
+      0%, 100% { transform: scaleY(0.5); }
+      50% { transform: scaleY(1); }
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+    }
+
+    .btn-primary:active { transform: scale(0.98); }
+
+    .btn-primary.recording {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      box-shadow: 0 8px 24px rgba(239,68,68,0.35);
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .card {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+
+    textarea { resize: vertical; min-height: 72px; }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b92a8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-row span:first-child { color: var(--text-muted); }
+
+    .record-item {
+      display: flex;
+      gap: 12px;
+      padding: 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .record-item:hover { background: #222633; }
+
+    .record-thumb {
+      width: 64px;
+      height: 64px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #312e81, #1e1b4b);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .record-info { flex: 1; min-width: 0; }
+
+    .record-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .record-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .record-duration {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--accent);
+      align-self: center;
+    }
+
+    .profile-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 12px;
+    }
+
+    .profile-name {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.92rem;
+    }
+
+    .toggle {
+      width: 48px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 999px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .toggle::after {
+      content: '';
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      right: 3px;
+      transition: transform 0.2s;
+    }
+
+    /* Bottom tab bar */
+    .tab-bar {
+      display: flex;
+      background: rgba(20,22,31,0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 8px 8px 28px;
+      flex-shrink: 0;
+    }
+
+    .tab {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 4px;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .tab.active { color: var(--accent); }
+
+    .tab-icon { font-size: 1.35rem; }
+
+    /* Desktop hint */
+    .hint {
+      margin-top: 24px;
+      max-width: 420px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      line-height: 1.6;
+    }
+
+    .hint kbd {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <h1>GlassCapture</h1>
+    <p>AI 眼镜数据采集 App — 交互原型</p>
+    <span class="badge">UI Preview v0.1</span>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="status-bar">
+        <span>9:41</span>
+        <span>📶 🔋</span>
+      </div>
+
+      <!-- 采集页 -->
+      <div class="screen active" id="screen-capture">
+        <div class="screen-title">采集</div>
+        <div class="screen-sub">连接眼镜后开始录制音视频</div>
+
+        <div class="status-pill connected" id="conn-pill">
+          <span class="dot"></span>
+          已连接 · AI-Glasses-5G
+        </div>
+
+        <div class="preview-card" id="preview">
+          <div class="timer" id="timer">00:00</div>
+          <div class="preview-icon">👓</div>
+          <div class="preview-label" id="preview-text">等待开始采集</div>
+          <div class="waveform" id="waveform" style="display:none">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="info-row">
+            <span>被试姓名</span>
+            <span id="display-name">张三</span>
+          </div>
+          <div class="info-row">
+            <span>设备型号</span>
+            <span>通用 RTSP 眼镜</span>
+          </div>
+          <div class="info-row">
+            <span>眼镜 IP</span>
+            <span>192.168.4.1</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-capture">开始采集</button>
+        <button class="btn-secondary">测试连接</button>
+      </div>
+
+      <!-- 设备页 -->
+      <div class="screen" id="screen-device">
+        <div class="screen-title">设备</div>
+        <div class="screen-sub">选择眼镜型号并配置网络</div>
+
+        <div class="card">
+          <div class="card-title">设备选择</div>
+          <div class="form-group">
+            <label>眼镜型号</label>
+            <select>
+              <option>通用 RTSP 协议</option>
+              <option>品牌 A — WiFi 直连</option>
+              <option>品牌 B — 自定义 TCP</option>
+              <option>＋ 添加自定义设备</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">网络配置</div>
+          <div class="form-group">
+            <label>当前 WiFi</label>
+            <input type="text" value="AI-Glasses-5G" readonly />
+          </div>
+          <div class="form-group">
+            <label>眼镜 IP 地址</label>
+            <input type="text" placeholder="192.168.4.1" value="192.168.4.1" />
+          </div>
+          <div class="form-group">
+            <label>流地址 / 端口</label>
+            <input type="text" placeholder="rtsp://192.168.4.1/live" value="rtsp://192.168.4.1/live" />
+          </div>
+        </div>
+
+        <button class="btn-primary">连接设备</button>
+        <button class="btn-secondary">打开 WiFi 设置</button>
+      </div>
+
+      <!-- 记录页 -->
+      <div class="screen" id="screen-records">
+        <div class="screen-title">记录</div>
+        <div class="screen-sub">本地已保存的采集文件</div>
+
+        <div class="form-group" style="margin-bottom:16px">
+          <input type="search" placeholder="🔍  搜索姓名或日期..." />
+        </div>
+
+        <div class="record-item">
+          <div class="record-thumb">🎬</div>
+          <div class="record-info">
+            <div class="record-name">张三</div>
+            <div class="record-meta">2026-06-30 14:30 · 通用 RTSP</div>
+          </div>
+          <div class="record-duration">02:15</div>
+        </div>
+
+        <div class="record-item">
+          <div class="record-thumb">🎬</div>
+          <div class="record-info">
+            <div class="record-name">李四</div>
+            <div class="record-meta">2026-06-29 09:12 · 品牌 A</div>
+          </div>
+          <div class="record-duration">01:48</div>
+        </div>
+
+        <div class="record-item">
+          <div class="record-thumb">🎬</div>
+          <div class="record-info">
+            <div class="record-name">王五</div>
+            <div class="record-meta">2026-06-28 16:45 · 通用 RTSP</div>
+          </div>
+          <div class="record-duration">05:32</div>
+        </div>
+      </div>
+
+      <!-- 我的页 -->
+      <div class="screen" id="screen-profile">
+        <div class="profile-avatar">👤</div>
+        <div class="profile-name">个人信息</div>
+
+        <div class="card">
+          <div class="form-group">
+            <label>姓名 *</label>
+            <input type="text" id="input-name" placeholder="请输入姓名" value="张三" />
+          </div>
+          <div class="form-group">
+            <label>编号</label>
+            <input type="text" placeholder="实验编号 / 工号" value="EXP-001" />
+          </div>
+          <div class="form-group">
+            <label>备注</label>
+            <textarea placeholder="场景说明、佩戴位置等">室内测试，右眼镜片</textarea>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="setting-row">
+            <span>深色模式</span>
+            <div class="toggle"></div>
+          </div>
+          <div class="setting-row">
+            <span>存储占用</span>
+            <span style="color:var(--text-muted)">1.2 GB</span>
+          </div>
+          <div class="setting-row">
+            <span>版本</span>
+            <span style="color:var(--text-muted)">v0.1.0</span>
+          </div>
+        </div>
+
+        <button class="btn-secondary" style="margin-top:12px">隐私政策</button>
+      </div>
+
+      <!-- Tab bar -->
+      <nav class="tab-bar">
+        <button class="tab active" data-screen="capture">
+          <span class="tab-icon">⏺</span>
+          采集
+        </button>
+        <button class="tab" data-screen="device">
+          <span class="tab-icon">📡</span>
+          设备
+        </button>
+        <button class="tab" data-screen="records">
+          <span class="tab-icon">📋</span>
+          记录
+        </button>
+        <button class="tab" data-screen="profile">
+          <span class="tab-icon">👤</span>
+          我的
+        </button>
+      </nav>
+    </div>
+  </div>
+
+  <p class="hint">
+    点击底部 Tab 切换页面 · 点击「开始采集」模拟录制<br />
+    在「我的」页修改姓名会同步到采集页
+  </p>
+
+  <script>
+    // Tab 切换
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const id = tab.dataset.screen;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('screen-' + id).classList.add('active');
+      });
+    });
+
+    // 姓名同步
+    const nameInput = document.getElementById('input-name');
+    const displayName = document.getElementById('display-name');
+    nameInput.addEventListener('input', () => {
+      displayName.textContent = nameInput.value || '未填写';
+    });
+
+    // 模拟采集
+    const btnCapture = document.getElementById('btn-capture');
+    const timer = document.getElementById('timer');
+    const previewText = document.getElementById('preview-text');
+    const waveform = document.getElementById('waveform');
+    let recording = false;
+    let seconds = 0;
+    let interval = null;
+
+    btnCapture.addEventListener('click', () => {
+      recording = !recording;
+      if (recording) {
+        btnCapture.textContent = '停止采集';
+        btnCapture.classList.add('recording');
+        timer.classList.add('recording');
+        previewText.textContent = '正在采集音视频...';
+        waveform.style.display = 'flex';
+        seconds = 0;
+        interval = setInterval(() => {
+          seconds++;
+          const m = String(Math.floor(seconds / 60)).padStart(2, '0');
+          const s = String(seconds % 60).padStart(2, '0');
+          timer.textContent = m + ':' + s;
+        }, 1000);
+      } else {
+        btnCapture.textContent = '开始采集';
+        btnCapture.classList.remove('recording');
+        timer.classList.remove('recording');
+        previewText.textContent = '采集已保存 ✓';
+        waveform.style.display = 'none';
+        clearInterval(interval);
+      }
+    });
+  </script>
+</body>
+</html>
